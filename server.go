@@ -12,6 +12,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/antchfx/xmlquery"
 	proxyproto "github.com/armon/go-proxyproto"
 	"github.com/pkg/errors"
 )
@@ -35,6 +36,11 @@ type Server struct {
 	// the greeting. This should probably be the hostname of the EPP server.
 	ServerID string
 
+	// CustomCommands is a mapping between an XPath value and a function
+	// which can receive an *xmlquery.Node. This is ued to handle custom queries
+	// in the server or override existing implementation.
+	CustomCommands map[string]func(node *xmlquery.Node) EppResult
+
 	keyFile  string
 	certFile string
 	listen   string
@@ -51,14 +57,25 @@ func New(serverID, listen, keyFile, certFile string) *Server {
 
 			return errors.New("client certificate verification not implemented")
 		},
-		ServerID: serverID,
-		listen:   listen,
-		keyFile:  keyFile,
-		certFile: certFile,
-		stopChan: make(chan struct{}),
-		wg:       sync.WaitGroup{},
-		mu:       sync.RWMutex{},
+		ServerID:       serverID,
+		CustomCommands: make(map[string]func(node *xmlquery.Node) EppResult),
+		listen:         listen,
+		keyFile:        keyFile,
+		certFile:       certFile,
+		stopChan:       make(chan struct{}),
+		wg:             sync.WaitGroup{},
+		mu:             sync.RWMutex{},
 	}
+}
+
+// AddHandler will add a new mapping between an XPath string and a function.
+func (s *Server) AddHandler(xpath string, fun func(node *xmlquery.Node) EppResult) *Server {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	s.CustomCommands[xpath] = fun
+
+	return s
 }
 
 // ListenAndServe will start a new server and handle incomming connections.
@@ -256,13 +273,6 @@ func Write(conn *tls.Conn, data interface{}) error {
 		Attr: []xml.Attr{
 			{
 				Name: xml.Name{
-					Space: "xsi",
-					Local: "schemaLocation",
-				},
-				Value: "urn:ietf:params:xml:ns:epp-1.0 epp-1.0.xsd",
-			},
-			{
-				Name: xml.Name{
 					Space: "",
 					Local: "xmlns",
 				},
@@ -270,10 +280,17 @@ func Write(conn *tls.Conn, data interface{}) error {
 			},
 			{
 				Name: xml.Name{
-					Space: "",
-					Local: "xmlns:xsi",
+					Space: "xmlns",
+					Local: "xsi",
 				},
 				Value: "http://www.w3.org/2001/XMLSchema-instance",
+			},
+			{
+				Name: xml.Name{
+					Space: "xsi",
+					Local: "schemaLocation",
+				},
+				Value: "urn:ietf:params:xml:ns:epp-1.0 epp-1.0.xsd",
 			},
 		},
 	}); err != nil {

@@ -58,6 +58,15 @@ func (s *Server) handleCommand(buffer []byte) EppResult {
 			/update
 	*/
 
+	// Check if custom or overridden command.
+	s.mu.RLock()
+	for xpath, handleFunction := range s.CustomCommands {
+		if node := xmlquery.FindOne(doc, xpath); node != nil {
+			return handleFunction(node)
+		}
+	}
+	s.mu.RUnlock()
+
 	if node := xmlquery.FindOne(doc, XPathHello); node != nil {
 		return s.HelloCommand(node)
 	}

@@ -18,6 +18,19 @@ Example clients:
 * [Domainr EPP client in Go (WIP)](https://github.com/domainr/epp)
 * [python-epp-client](https://github.com/Darkfish/python-epp-client)
 
+Or just a library from a scripting language that supports reasonable oneliners
+like [`Net::EPP::Client`](https://metacpan.org/pod/Net::EPP::Client).
+
+```sh
+
+perl -MNet::EPP::Client -E \
+    'my $c = Net::EPP::Client->new(host => "localhost", port => 700, ssl => 1, frames => 1);
+    say $c->connect(SSL_verify_mode => 0, SSL_cert_file => $ENV{CERT}, SSL_key_file => $ENV{KEY});
+    $c->send_frame('login.xml');
+    say $c->get_frame;
+    '
+```
+
 ## References
 
 ### XSD files
