@@ -1,11 +1,13 @@
 package main
 
 import (
+	"bytes"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/pem"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"math/big"
@@ -14,8 +16,10 @@ import (
 	"syscall"
 	"time"
 
-	eppserver "github.com/bombsimon/epp-server"
+	"github.com/antchfx/xmlquery"
 	"github.com/pkg/errors"
+
+	eppserver "github.com/bombsimon/epp-server"
 )
 
 func main() {
@@ -27,8 +31,13 @@ func main() {
 		os.Remove(tempKey)
 	}()
 
-	server := eppserver.New("epp.example.test", ":4700", tempKey, tempCert)
-	server.VerifyClientCertificateFunc = verifyClientCertificate
+	server := eppserver.Server{
+		IdleTimeout:      5 * time.Minute,
+		MaxSessionLength: 10 * time.Minute,
+		Addr:             ":4701",
+		Handler:          RouteMessage,
+		Greeting:         Greet,
+	}
 
 	// Support graceful shutdown.
 	go func() {
@@ -38,28 +47,63 @@ func main() {
 		server.Stop()
 	}()
 
-	if err := server.ListenAndServe(); err != nil {
+	log.Println("Running server...")
+	if err := server.ListenAndServe(tempCert, tempKey); err != nil {
 		log.Fatal(err.Error())
 	}
 }
 
-func verifyClientCertificate(rawCerts [][]byte, _ [][]*x509.Certificate) error {
-	if len(rawCerts) != 1 {
+func Greet(s *eppserver.Session) ([]byte, error) {
+	return []byte("greetings!"), nil
+}
+
+func RouteMessage(s *eppserver.Session, data []byte) ([]byte, error) {
+	xmlData, err := xmlquery.Parse(bytes.NewReader(data))
+	if err != nil {
+		return nil, err
+	}
+
+	xpaths := []string{"/epp/hello",
+		"/epp/command/login",
+		"/epp/command/logout",
+		"/epp/command/poll",
+		"/epp/command/check",
+		"/epp/command/create",
+		"/epp/command/delete",
+		"/epp/command/info",
+		"/epp/command/renew",
+		"/epp/command/transfer",
+		"/epp/command/update",
+	}
+
+	for _, xpath := range xpaths {
+		if xpath == "/epp/command/login" {
+			err := verifyClientCertificate(s.ConnectionState().PeerCertificates)
+			if err != nil {
+				return []byte("could not verify peer certificates"), nil
+			}
+		}
+		node := xmlquery.FindOne(xmlData, xpath)
+		if node != nil {
+			return []byte(fmt.Sprintf("got message %s", xpath)), nil
+		}
+	}
+
+	return []byte("no handler for this"), nil
+}
+
+func verifyClientCertificate(certs []*x509.Certificate) error {
+	if len(certs) != 1 {
 		return errors.New("dind't find one single client ceritficate")
 	}
 
-	c, err := x509.ParseCertificate(rawCerts[0])
-	if err != nil {
-		return errors.Wrap(err, "could not parse client certificate")
-	}
-
-	_, ok := c.PublicKey.(*rsa.PublicKey)
+	cert := certs[0]
+	_, ok := cert.PublicKey.(*rsa.PublicKey)
 	if !ok {
 		return errors.New("could not convert public key")
 	}
 
 	// Do something with public key.
-
 	return nil
 }
 
