@@ -11,7 +11,7 @@ func (s *Server) GreetResponse() ws.EppType {
 	return ws.EppType{
 		Greeting: &ws.GreetingType{
 			SvID: ws.SIDType{
-				Id: ws.ClIDType(s.ServerID),
+				Id: ws.ClIDType("asdb"),
 			},
 			SvDate: time.Now(),
 		},
