@@ -1,13 +1,11 @@
 package main
 
 import (
-	"bytes"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/pem"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"math/big"
@@ -16,7 +14,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/antchfx/xmlquery"
 	"github.com/pkg/errors"
 
 	eppserver "github.com/bombsimon/epp-server"
@@ -31,12 +28,27 @@ func main() {
 		os.Remove(tempKey)
 	}()
 
+	mux := eppserver.Mux{}
+	mux.AddHandler("command>login", func(s *eppserver.Session, data []byte) ([]byte, error) {
+		// Do stuff.
+	})
+	mux.AddHandler("command>contact>check", func(s *eppserver.Session, data []byte) ([]byte, error) {
+		// Do stuff.
+	})
+
 	server := eppserver.Server{
 		IdleTimeout:      5 * time.Minute,
 		MaxSessionLength: 10 * time.Minute,
 		Addr:             ":4701",
-		Handler:          RouteMessage,
-		Greeting:         Greet,
+		Handler:          mux.Handle,
+		Greeting: func(s *eppserver.Session) ([]byte, error) {
+			err := verifyClientCertificate(s.ConnectionState().PeerCertificates)
+			if err != nil {
+				return []byte("could not verify peer certificates"), nil
+			}
+
+			return []byte("greetings!"), nil
+		},
 	}
 
 	// Support graceful shutdown.
@@ -51,45 +63,6 @@ func main() {
 	if err := server.ListenAndServe(tempCert, tempKey); err != nil {
 		log.Fatal(err.Error())
 	}
-}
-
-func Greet(s *eppserver.Session) ([]byte, error) {
-	return []byte("greetings!"), nil
-}
-
-func RouteMessage(s *eppserver.Session, data []byte) ([]byte, error) {
-	xmlData, err := xmlquery.Parse(bytes.NewReader(data))
-	if err != nil {
-		return nil, err
-	}
-
-	xpaths := []string{"/epp/hello",
-		"/epp/command/login",
-		"/epp/command/logout",
-		"/epp/command/poll",
-		"/epp/command/check",
-		"/epp/command/create",
-		"/epp/command/delete",
-		"/epp/command/info",
-		"/epp/command/renew",
-		"/epp/command/transfer",
-		"/epp/command/update",
-	}
-
-	for _, xpath := range xpaths {
-		if xpath == "/epp/command/login" {
-			err := verifyClientCertificate(s.ConnectionState().PeerCertificates)
-			if err != nil {
-				return []byte("could not verify peer certificates"), nil
-			}
-		}
-		node := xmlquery.FindOne(xmlData, xpath)
-		if node != nil {
-			return []byte(fmt.Sprintf("got message %s", xpath)), nil
-		}
-	}
-
-	return []byte("no handler for this"), nil
 }
 
 func verifyClientCertificate(certs []*x509.Certificate) error {

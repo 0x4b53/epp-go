@@ -1,0 +1,14 @@
+<epp xmlns="urn:ietf:params:xml:ns:epp-1.0">
+  <command>
+    <create>
+      <domain:create xmlns:domain="urn:ietf:params:xml:ns:domain-1.0">
+        <domain:name>example.se.se</domain:name>
+        <domain:period unit="m">12</domain:period>
+        <domain:registrant>registrant-00001</domain:registrant>
+        <domain:contact type="tech">contact-00001</domain:contact>
+        <domain:contact type="admin">contact-00002</domain:contact>
+      </domain:create>
+    </create>
+    <clTRID>ABC-12345</clTRID>
+  </command>
+</epp>
