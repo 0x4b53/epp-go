@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<epp xmlns="urn:ietf:params:xml:ns:epp-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:ietf:params:xml:ns:epp-1.0 epp-1.0.xsd">
+    <command>
+        <update>
+            <domain:update xmlns:domain="urn:ietf:params:xml:ns:domain-1.0" xsi:schemaLocation="urn:ietf:params:xml:ns:domain-1.0 domain-1.0.xsd">
+                <domain:name>example.se.se</domain:name>
+                <domain:add>
+                    <!-- <domain:ns>
+                        <domain:hostObj>ns.example.se</domain:hostObj>
+                    </domain:ns> -->
+                    <!-- <domain:contact type="tech">contact-00001</domain:contact> -->
+                    <!-- <domain:status s="clientHold" lang="en">Payment overdue.</domain:status> -->
+                </domain:add>
+                <domain:rem>
+                    <!-- <domain:ns>
+                        <domain:hostObj>ns.example.se</domain:hostObj>
+                    </domain:ns> -->
+                    <!-- <domain:contact type="tech">contact-00001</domain:contact> -->
+                </domain:rem>
+                <domain:chg>
+                    <!-- <domain:registrant>contact-00001</domain:registrant> -->
+                    <!-- <domain:authInfo>
+                        <domain:pw>password</domain:pw>
+                    </domain:authInfo> -->
+                </domain:chg>
+            </domain:update>
+        </update>
+        <extension>
+            <!-- <secDNS:update xmlns:secDNS="urn:ietf:params:xml:ns:secDNS-1.0" xsi:schemaLocation="urn:ietf:params:xml:ns:secDNS-1.0  secDNS-1.0.xsd">
+                <secDNS:add>
+                    <secDNS:dsData>
+                        <secDNS:keyTag>12345</secDNS:keyTag>
+                        <secDNS:alg>3</secDNS:alg>
+                        <secDNS:digestType>1</secDNS:digestType>
+                        <secDNS:digest>my-digest</secDNS:digest>
+                    </secDNS:dsData>
+                </secDNS:add>
+                <secDNS:rem>
+                    <secDNS:keyTag>0</secDNS:keyTag>
+                </secDNS:rem>
+            </secDNS:update> -->
+            <sedDNS:update xmlns:sedDNS="urn:ietf:params:xml:ns:secDNS-1.1" xsi:schemaLocation="urn:ietf:params:xml:ns:secDNS-1.1 secDNS-1.1.xsd">
+                <!-- <sedDNS:add>
+                    <sedDNS:dsData>
+                        <sedDNS:keyTag>12345</sedDNS:keyTag>
+                        <sedDNS:alg>3</sedDNS:alg>
+                        <sedDNS:digestType>1</sedDNS:digestType>
+                        <sedDNS:digest>other-digest</sedDNS:digest>
+                    </sedDNS:dsData>
+                    <sedDNS:dsData>
+                        <sedDNS:keyTag>12346</sedDNS:keyTag>
+                        <sedDNS:alg>3</sedDNS:alg>
+                        <sedDNS:digestType>1</sedDNS:digestType>
+                        <sedDNS:digest>other-digest</sedDNS:digest>
+                    </sedDNS:dsData>
+                </sedDNS:add> -->
+                <!-- <sedDNS:rem>
+                    <sedDNS:dsData>
+                        <sedDNS:keyTag>12345</sedDNS:keyTag>
+                        <sedDNS:alg>3</sedDNS:alg>
+                        <sedDNS:digestType>1</sedDNS:digestType>
+                        <sedDNS:digest>other-digest</sedDNS:digest>
+                    </sedDNS:dsData>
+                </sedDNS:rem> -->
+                <sedDNS:rem>
+                    <sedDNS:all>1</sedDNS:all>
+                </sedDNS:rem>
+            </sedDNS:update>
+            <!-- <iis:update xmlns:iis="urn:se:iis:xml:epp:iis-1.2" xsi:schemaLocation="urn:se:iis:xml:epp:iis-1.2 iis-1.2.xsd">
+                <iis:clientDelete>1</iis:clientDelete>
+            </iis:update> -->
+        </extension>
+        <clTRID>ABC-12345</clTRID>
+    </command>
+</epp>

@@ -1,0 +1,12 @@
+<epp xmlns="urn:ietf:params:xml:ns:epp-1.0">
+  <command>
+    <create>
+      <host:create xmlns:host="urn:ietf:params:xml:ns:host-1.0">
+        <host:name>ns1.example.se</host:name>
+        <host:addr>10.10.10.10</host:addr>
+        <host:addr>10.10.10.11</host:addr>
+      </host:create>
+    </create>
+    <clTRID>ABC-12345</clTRID>
+  </command>
+</epp>
