@@ -3,10 +3,10 @@ package main
 import (
 	"crypto/rand"
 	"crypto/rsa"
+	"crypto/tls"
 	"crypto/x509"
 	"crypto/x509/pkix"
-	"encoding/pem"
-	"io/ioutil"
+	"fmt"
 	"log"
 	"math/big"
 	"os"
@@ -20,20 +20,14 @@ import (
 )
 
 func main() {
-	// Create temporary certificates and remove when shutting down.
-	// NOTE: This is for testing only and should not be used.
-	tempCert, tempKey := createCertificateFiles()
-	defer func() {
-		os.Remove(tempCert)
-		os.Remove(tempKey)
-	}()
-
-	mux := eppserver.Mux{}
-	mux.AddHandler("command>login", func(s *eppserver.Session, data []byte) ([]byte, error) {
+	mux := eppserver.NewMux()
+	mux.AddHandler("command/login", func(s *eppserver.Session, data []byte) ([]byte, error) {
 		// Do stuff.
+		return []byte("login"), nil
 	})
-	mux.AddHandler("command>contact>check", func(s *eppserver.Session, data []byte) ([]byte, error) {
+	mux.AddHandler("command/check/contact", func(s *eppserver.Session, data []byte) ([]byte, error) {
 		// Do stuff.
+		return []byte("contact-check"), nil
 	})
 
 	server := eppserver.Server{
@@ -41,10 +35,17 @@ func main() {
 		MaxSessionLength: 10 * time.Minute,
 		Addr:             ":4701",
 		Handler:          mux.Handle,
+		TLSConfig: &tls.Config{
+			Certificates: []tls.Certificate{generateCertificate()},
+			ClientAuth:   tls.RequireAnyClientCert,
+		},
 		Greeting: func(s *eppserver.Session) ([]byte, error) {
 			err := verifyClientCertificate(s.ConnectionState().PeerCertificates)
 			if err != nil {
-				return []byte("could not verify peer certificates"), nil
+				_ = s.Close()
+
+				fmt.Println("could not verify peer certificates")
+				return nil, errors.New("could not verify certificates")
 			}
 
 			return []byte("greetings!"), nil
@@ -60,7 +61,7 @@ func main() {
 	}()
 
 	log.Println("Running server...")
-	if err := server.ListenAndServe(tempCert, tempKey); err != nil {
+	if err := server.ListenAndServe(); err != nil {
 		log.Fatal(err.Error())
 	}
 }
@@ -80,23 +81,8 @@ func verifyClientCertificate(certs []*x509.Certificate) error {
 	return nil
 }
 
-func createPrivKey(priv *rsa.PrivateKey) string {
-	f, _ := ioutil.TempFile(".", "priv*.key")
-	defer f.Close()
-
-	var privateKey = &pem.Block{
-		Type:  "PRIVATE KEY",
-		Bytes: x509.MarshalPKCS1PrivateKey(priv),
-	}
-
-	_ = pem.Encode(f, privateKey)
-
-	return f.Name()
-}
-
-func createCertificate(priv *rsa.PrivateKey, pub rsa.PublicKey) string {
-	f, _ := ioutil.TempFile(".", "pub*.pem")
-	defer f.Close()
+func generateCertificate() tls.Certificate {
+	key, _ := rsa.GenerateKey(rand.Reader, 2048)
 
 	cert := &x509.Certificate{
 		SerialNumber: big.NewInt(1653),
@@ -114,23 +100,10 @@ func createCertificate(priv *rsa.PrivateKey, pub rsa.PublicKey) string {
 		BasicConstraintsValid: true,
 	}
 
-	certificate, _ := x509.CreateCertificate(rand.Reader, cert, cert, &pub, priv)
+	certificate, _ := x509.CreateCertificate(rand.Reader, cert, cert, key.Public(), key)
 
-	certFile := &pem.Block{
-		Type:  "CERTIFICATE",
-		Bytes: certificate,
+	return tls.Certificate{
+		Certificate: [][]byte{certificate},
+		PrivateKey:  key,
 	}
-
-	_ = pem.Encode(f, certFile)
-
-	return f.Name()
-}
-
-func createCertificateFiles() (string, string) {
-	key, _ := rsa.GenerateKey(rand.Reader, 2048)
-
-	tempKey := createPrivKey(key)
-	tempCert := createCertificate(key, key.PublicKey)
-
-	return tempCert, tempKey
 }
