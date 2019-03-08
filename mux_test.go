@@ -25,7 +25,7 @@ func Test_buildPath(t *testing.T) {
 		},
 		{
 			input: "check-domain.xml",
-			want:  "command/check/contact",
+			want:  "command/check/domain",
 		},
 		{
 			input: "login.xml",

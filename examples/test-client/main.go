@@ -3,10 +3,14 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"crypto/rand"
+	"crypto/rsa"
 	"crypto/tls"
+	"crypto/x509"
+	"crypto/x509/pkix"
 	"fmt"
 	"log"
-	"net"
+	"math/big"
 	"os"
 	"time"
 
@@ -14,25 +18,21 @@ import (
 )
 
 func main() {
-	conn, err := tls.Dial("tcp", ":4701", &tls.Config{
-		InsecureSkipVerify: true,
-	})
+	client := &eppserver.Client{
+		TLSConfig: &tls.Config{
+			InsecureSkipVerify: true,
+			Certificates:       []tls.Certificate{generateCertificate()},
+		},
+	}
+
+	greeting, err := client.Connect(":4701")
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 
+	fmt.Println(string(greeting))
+
 	for {
-		_ = conn.SetReadDeadline(time.Now().Add(1 * time.Second))
-
-		msg, err := eppserver.ReadMessage(conn)
-		if err != nil {
-			if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
-				continue
-			}
-			log.Fatal(err.Error())
-		}
-		fmt.Println(string(msg))
-
 		scnr := bufio.NewScanner(os.Stdin)
 		scnr.Split(func(data []byte, _ bool) (int, []byte, error) {
 			if i := bytes.Index(data, []byte{'\n', '\n'}); i >= 0 {
@@ -52,9 +52,38 @@ func main() {
 			return
 		}
 
-		err = eppserver.WriteMessage(conn, data)
+		response, err := client.Send(data)
 		if err != nil {
 			log.Fatal(err.Error())
 		}
+
+		fmt.Println(string(response))
+	}
+}
+
+func generateCertificate() tls.Certificate {
+	key, _ := rsa.GenerateKey(rand.Reader, 2048)
+
+	cert := &x509.Certificate{
+		SerialNumber: big.NewInt(1653),
+		Subject: pkix.Name{
+			CommonName:   "epp.example.test",
+			Organization: []string{"Simple Server Test"},
+			Country:      []string{"SE"},
+			Locality:     []string{"Stockholm"},
+		},
+		NotBefore:             time.Now(),
+		NotAfter:              time.Now().AddDate(0, 0, 1),
+		IsCA:                  true,
+		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth, x509.ExtKeyUsageServerAuth},
+		KeyUsage:              x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign,
+		BasicConstraintsValid: true,
+	}
+
+	certificate, _ := x509.CreateCertificate(rand.Reader, cert, cert, key.Public(), key)
+
+	return tls.Certificate{
+		Certificate: [][]byte{certificate},
+		PrivateKey:  key,
 	}
 }

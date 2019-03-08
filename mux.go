@@ -33,6 +33,7 @@ func NewMux() *Mux {
 			"urn:ietf:params:xml:ns:host-1.0":    "host",
 			"urn:ietf:params:xml:ns:contact-1.0": "contact",
 		},
+		handlers: make(map[string]HandlerFunc),
 	}
 
 	return m

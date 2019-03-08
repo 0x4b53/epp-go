@@ -25,11 +25,12 @@ type Server struct {
 	sessionsMu sync.Mutex
 	sessionsWg sync.WaitGroup
 
-	stopChan chan struct{}
+	onStarteds []func()
+	stopChan   chan struct{}
 }
 
 // ListenAndServe will start the epp server.
-func (s *Server) ListenAndServe(certFile, keyFile string) error {
+func (s *Server) ListenAndServe() error {
 	addr, err := net.ResolveTCPAddr("tcp", s.Addr)
 	if err != nil {
 		return err
@@ -40,7 +41,7 @@ func (s *Server) ListenAndServe(certFile, keyFile string) error {
 		return err
 	}
 
-	err = s.Serve(l, certFile, keyFile)
+	err = s.Serve(l)
 	if err != nil {
 		return err
 	}
@@ -49,7 +50,7 @@ func (s *Server) ListenAndServe(certFile, keyFile string) error {
 }
 
 // Serve will serve connections by listening on l.
-func (s *Server) Serve(l *net.TCPListener, certFile, keyFile string) error {
+func (s *Server) Serve(l *net.TCPListener) error {
 	tlsConfig := &tls.Config{}
 
 	s.sessionsWg = sync.WaitGroup{}
@@ -67,16 +68,11 @@ func (s *Server) Serve(l *net.TCPListener, certFile, keyFile string) error {
 		tlsConfig = s.TLSConfig.Clone()
 	}
 
-	var err error
-
-	configHasCert := len(tlsConfig.Certificates) > 0 || tlsConfig.GetCertificate != nil
-	if !configHasCert || certFile != "" || keyFile != "" {
-		tlsConfig.Certificates = make([]tls.Certificate, 1)
-		tlsConfig.Certificates[0], err = tls.LoadX509KeyPair(certFile, keyFile)
-		if err != nil {
-			return err
-		}
+	for _, f := range s.onStarteds {
+		f()
 	}
+
+	var err error
 
 	for {
 		// Reset deadline for the listener to stop blocking on accepting
@@ -158,6 +154,12 @@ func (s *Server) startSession(conn net.Conn, tlsConfig *tls.Config) {
 	if err != nil {
 		log.Println(err)
 	}
+}
+
+// OnStarted will register a function that is called when the server has
+// finished it's startup.
+func (s *Server) OnStarted(f func()) {
+	s.onStarteds = append(s.onStarteds, f)
 }
 
 // Stop will close the channel making no new regquests being processed and then
