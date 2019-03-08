@@ -17,27 +17,27 @@ func Test_buildPath(t *testing.T) {
 	}{
 		{
 			input: "ack-poll.xml",
-			want:  "command>poll",
+			want:  "command/poll",
 		},
 		{
 			input: "check-contact.xml",
-			want:  "command>check>contact",
+			want:  "command/check/contact",
 		},
 		{
 			input: "check-domain.xml",
-			want:  "command>check>contact",
+			want:  "command/check/contact",
 		},
 		{
 			input: "login.xml",
-			want:  "command>login",
+			want:  "command/login",
 		},
 		{
 			input: "info-domain.xml",
-			want:  "command>info>domain",
+			want:  "command/info/domain",
 		},
 		{
 			input: "logout.xml",
-			want:  "command>logout",
+			want:  "command/logout",
 		},
 		{
 			input: "hello.xml",
@@ -45,7 +45,7 @@ func Test_buildPath(t *testing.T) {
 		},
 		{
 			input: "transfer-domain.xml",
-			want:  "command>transfer>domain",
+			want:  "command/transfer/domain",
 		},
 	}
 
@@ -57,7 +57,9 @@ func Test_buildPath(t *testing.T) {
 			root, err := xmltree.Parse(fileData)
 			require.Nil(t, err)
 
-			path, err := buildPath(root)
+			m := NewMux()
+
+			path, err := m.buildPath(root)
 			require.Nil(t, err)
 
 			assert.Equal(t, tt.want, path)
