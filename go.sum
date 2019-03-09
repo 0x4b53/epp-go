@@ -1,9 +1,5 @@
 aqwari.net/xml v0.0.0-20190112161936-38a3e78ff676 h1:5G5yQP4VEJjVNO8lkZPjiCJ1zkBmuZdqsEQkE1671rE=
 aqwari.net/xml v0.0.0-20190112161936-38a3e78ff676/go.mod h1:NIqcJ5inc6DJNSGCVEYGd3vohE6xF4fhUKHSl5bItVE=
-github.com/bombsimon/epp-server v0.0.0-20190308102041-e16a3e622492 h1:8pCiVzYUzDj2rh+waOuE2ZT0XsGD5BYaQ2b1DJBxZ+Q=
-github.com/bombsimon/epp-server v0.0.0-20190308102041-e16a3e622492/go.mod h1:6Cbq94WKcwwoFTGQa3/sO0t4C1Z9maLvxatuW7zsPH4=
-github.com/bombsimon/ff v0.0.0-20181002164615-37c9448350e2 h1:4GQ9fxp4wRfLDVCLeEMRPz6tGo0kP2dDI1p7tsmUYs0=
-github.com/bombsimon/ff v0.0.0-20181002164615-37c9448350e2/go.mod h1:0KHNnAIrVeP6XDXegqMsf3WsZZw+xhd8SFLYzEyd6Ag=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/lestrrat-go/libxml2 v0.0.0-20180810110639-f24a389bbd76 h1:Nn7Ws4Wm5tDPDg6wUxOuiDvkJLfTkD9piHIlEkWfSF0=
@@ -14,10 +10,14 @@ github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZb
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/satori/go.uuid v1.2.0 h1:0uYX9dsZ2yD7q2RtLRtPSdGDWzjeM3TbMJP9utgA0ww=
 github.com/satori/go.uuid v1.2.0/go.mod h1:dA0hQrYB0VpLJoorglMZABFdXlWrHn1NEOzdhQKdks0=
+github.com/satori/go.uuid v1.2.1-0.20181028125025-b2ce2384e17b h1:gQZ0qzfKHQIybLANtM3mBXNUtOfsCFXeTsnBqCsx1KM=
+github.com/satori/go.uuid v1.2.1-0.20181028125025-b2ce2384e17b/go.mod h1:dA0hQrYB0VpLJoorglMZABFdXlWrHn1NEOzdhQKdks0=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.3.0 h1:TivCn/peBQ7UY8ooIcPgZFpTNSz0Q2U6UrFlUfqbe0Q=
 github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UVUgZn+9EI=
-golang.org/x/net v0.0.0-20190310074541-c10a0554eabf h1:J7RqX9u0J9ZB37CGaFc2VC+QZZT6E6jnDbrboEFVo0U=
-golang.org/x/net v0.0.0-20190310074541-c10a0554eabf/go.mod h1:mL1N/T3taQHkDXs73rZJwtUhF3w3ftmwwsq0BUmARs4=
+golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
+golang.org/x/net v0.0.0-20190311183353-d8887717615a h1:oWX7TPOiFAMXLq8o0ikBYfCJVlRHBcsciT5bXOrH628=
+golang.org/x/net v0.0.0-20190311183353-d8887717615a/go.mod h1:t9HGtf8HONx5eT2rtn7q6eTqICYqUVnKs3thJo3Qplg=
+golang.org/x/sys v0.0.0-20190215142949-d0b11bdaac8a/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
 golang.org/x/text v0.3.0 h1:g61tztE5qeGQ89tm6NTjjM9VPIm088od1l6aSorWRWg=
 golang.org/x/text v0.3.0/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=

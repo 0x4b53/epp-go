@@ -39,17 +39,18 @@ func main() {
 			Certificates: []tls.Certificate{generateCertificate()},
 			ClientAuth:   tls.RequireAnyClientCert,
 		},
-		Greeting: func(s *epp.Session) ([]byte, error) {
-			err := verifyClientCertificate(s.ConnectionState().PeerCertificates)
-			if err != nil {
-				_ = s.Close()
+	}
 
-				fmt.Println("could not verify peer certificates")
-				return nil, errors.New("could not verify certificates")
-			}
+	server.Greeting = func(s *epp.Session) ([]byte, error) {
+		err := verifyClientCertificate(s.ConnectionState().PeerCertificates)
+		if err != nil {
+			_ = s.Close()
 
-			return []byte("greetings!"), nil
-		},
+			fmt.Println("could not verify peer certificates")
+			return nil, errors.New("could not verify certificates")
+		}
+
+		return server.Encode(server.GreetResponse(), map[string]string{})
 	}
 
 	// Support graceful shutdown.
