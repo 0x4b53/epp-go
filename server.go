@@ -127,7 +127,7 @@ func (s *Server) startSession(conn net.Conn, tlsConfig *tls.Config) {
 		s.Handler,
 		s.Greeting,
 		tlsConn.ConnectionState,
-		uuid.Must(uuid.NewV4(), nil).String(),
+		uuid.Must(uuid.NewV4()).String(),
 	)
 
 	// Ensure the session is added to our index.
