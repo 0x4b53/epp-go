@@ -14,11 +14,11 @@ import (
 	"os"
 	"time"
 
-	eppserver "github.com/bombsimon/epp-server"
+	epp "github.com/bombsimon/epp-go"
 )
 
 func main() {
-	client := &eppserver.Client{
+	client := &epp.Client{
 		TLSConfig: &tls.Config{
 			InsecureSkipVerify: true,
 			Certificates:       []tls.Certificate{generateCertificate()},

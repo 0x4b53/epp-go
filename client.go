@@ -1,4 +1,4 @@
-package eppserver
+package epp
 
 import (
 	"crypto/tls"
