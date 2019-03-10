@@ -1,4 +1,4 @@
-package eppserver
+package epp
 
 import (
 	"crypto/tls"
@@ -11,10 +11,11 @@ type GreetFunc func(*Session) ([]byte, error)
 
 // Session is an active connection to the EPP server.
 type Session struct {
-	stopChan chan struct{}
-	conn     net.Conn
-	handler  HandlerFunc
-	greeting GreetFunc
+	stopChan  chan struct{}
+	conn      net.Conn
+	handler   HandlerFunc
+	greeting  GreetFunc
+	validator *Validator
 
 	Data            map[string]interface{}
 	SessionID       string
@@ -25,11 +26,17 @@ type Session struct {
 
 // NewSession will create a new Session.
 func NewSession(conn net.Conn, handler HandlerFunc, greeting GreetFunc, tlsStateFunc func() tls.ConnectionState, sessionID string) *Session {
+	validator, err := NewValidator("xml/index.xsd")
+	if err != nil {
+		panic(err)
+	}
+
 	s := &Session{
 		stopChan:        make(chan struct{}),
 		conn:            conn,
 		handler:         handler,
 		greeting:        greeting,
+		validator:       validator,
 		Data:            map[string]interface{}{},
 		SessionID:       sessionID,
 		SessionTimeout:  1 * time.Hour,
@@ -84,6 +91,12 @@ func (s *Session) run() error {
 			return err
 		}
 
+		if s.validator != nil {
+			if err := s.validator.Validate(message); err != nil {
+				return err
+			}
+		}
+
 		// Handle Message:
 		response, err = s.handler(s, message)
 		if err != nil {
@@ -103,5 +116,10 @@ func (s *Session) run() error {
 // Close will tell the session to close.
 func (s *Session) Close() error {
 	close(s.stopChan)
+
+	if s.validator != nil {
+		s.validator.Schema.Free()
+	}
+
 	return nil
 }

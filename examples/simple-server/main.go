@@ -16,21 +16,21 @@ import (
 
 	"github.com/pkg/errors"
 
-	eppserver "github.com/bombsimon/epp-server"
+	epp "github.com/bombsimon/epp-go"
 )
 
 func main() {
-	mux := eppserver.NewMux()
-	mux.AddHandler("command/login", func(s *eppserver.Session, data []byte) ([]byte, error) {
+	mux := epp.NewMux()
+	mux.AddHandler("command/login", func(s *epp.Session, data []byte) ([]byte, error) {
 		// Do stuff.
 		return []byte("login"), nil
 	})
-	mux.AddHandler("command/check/contact", func(s *eppserver.Session, data []byte) ([]byte, error) {
+	mux.AddHandler("command/check/contact", func(s *epp.Session, data []byte) ([]byte, error) {
 		// Do stuff.
 		return []byte("contact-check"), nil
 	})
 
-	server := eppserver.Server{
+	server := epp.Server{
 		IdleTimeout:      5 * time.Minute,
 		MaxSessionLength: 10 * time.Minute,
 		Addr:             ":4701",
@@ -39,7 +39,7 @@ func main() {
 			Certificates: []tls.Certificate{generateCertificate()},
 			ClientAuth:   tls.RequireAnyClientCert,
 		},
-		Greeting: func(s *eppserver.Session) ([]byte, error) {
+		Greeting: func(s *epp.Session) ([]byte, error) {
 			err := verifyClientCertificate(s.ConnectionState().PeerCertificates)
 			if err != nil {
 				_ = s.Close()
