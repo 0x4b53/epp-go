@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schema xmlns:host="urn:ietf:params:xml:ns:host-1.0" xmlns:epp="urn:ietf:params:xml:ns:epp-1.0" xmlns:eppcom="urn:ietf:params:xml:ns:eppcom-1.0" xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:ietf:params:xml:ns:host-1.0" elementFormDefault="qualified">
-<!--
+  <!--
   Import common element types.
   -->
   <import namespace="urn:ietf:params:xml:ns:eppcom-1.0"/>
@@ -11,7 +11,7 @@
         host provisioning schema.
       </documentation>
   </annotation>
-<!--
+  <!--
   Child elements found in EPP commands.
   -->
   <element name="check" type="host:mNameType"/>
@@ -19,7 +19,7 @@
   <element name="delete" type="host:sNameType"/>
   <element name="info" type="host:sNameType"/>
   <element name="update" type="host:updateType"/>
-<!--
+  <!--
   Child elements of the <create> command.
   -->
   <complexType name="createType">
@@ -47,7 +47,7 @@
       <enumeration value="v6"/>
     </restriction>
   </simpleType>
-<!--
+  <!--
   Child elements of the <delete> and <info> commands.
   -->
   <complexType name="sNameType">
@@ -55,7 +55,7 @@
       <element name="name" type="eppcom:labelType"/>
     </sequence>
   </complexType>
-<!--
+  <!--
   Child element of commands that accept multiple names.
   -->
   <complexType name="mNameType">
@@ -63,7 +63,7 @@
       <element name="name" type="eppcom:labelType" maxOccurs="unbounded"/>
     </sequence>
   </complexType>
-<!--
+  <!--
   Child elements of the <update> command.
   -->
   <complexType name="updateType">
@@ -74,7 +74,7 @@
       <element name="chg" type="host:chgType" minOccurs="0"/>
     </sequence>
   </complexType>
-<!--
+  <!--
   Data elements that can be added or removed.
   -->
   <complexType name="addRemType">
@@ -83,7 +83,7 @@
       <element name="status" type="host:statusType" minOccurs="0" maxOccurs="7"/>
     </sequence>
   </complexType>
-<!--
+  <!--
   Data elements that can be changed.
   -->
   <complexType name="chgType">
@@ -91,14 +91,14 @@
       <element name="name" type="eppcom:labelType"/>
     </sequence>
   </complexType>
-<!--
+  <!--
   Child response elements.
   -->
   <element name="chkData" type="host:chkDataType"/>
   <element name="creData" type="host:creDataType"/>
   <element name="infData" type="host:infDataType"/>
   <element name="panData" type="host:panDataType"/>
-<!--
+  <!--
   <check> response elements.
   -->
   <complexType name="chkDataType">
@@ -119,7 +119,7 @@
       </extension>
     </simpleContent>
   </complexType>
-<!--
+  <!--
   <create> response elements.
   -->
   <complexType name="creDataType">
@@ -128,7 +128,7 @@
       <element name="crDate" type="dateTime"/>
     </sequence>
   </complexType>
-<!--
+  <!--
   <info> response elements.
   -->
   <complexType name="infDataType">
@@ -145,7 +145,7 @@
       <element name="trDate" type="dateTime" minOccurs="0"/>
     </sequence>
   </complexType>
-<!--
+  <!--
   Status is a combination of attributes and an optional human-readable
   message that may be expressed in languages other than English.
   -->
@@ -171,7 +171,7 @@
       <enumeration value="serverUpdateProhibited"/>
     </restriction>
   </simpleType>
-<!--
+  <!--
   Pending action notification response elements.
   -->
   <complexType name="panDataType">
@@ -188,7 +188,7 @@
       </extension>
     </simpleContent>
   </complexType>
-<!--
+  <!--
   End of schema.
   -->
 </schema>

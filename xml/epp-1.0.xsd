@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schema xmlns:epp="urn:ietf:params:xml:ns:epp-1.0" xmlns:eppcom="urn:ietf:params:xml:ns:eppcom-1.0" xmlns="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" targetNamespace="urn:ietf:params:xml:ns:epp-1.0" elementFormDefault="qualified">
-<!--
+  <!--
   Import common element types.
   -->
-  <import namespace="urn:ietf:params:xml:ns:eppcom-1.0" schemaLocation="eppcom-1.0.xsd" />
+  <import namespace="urn:ietf:params:xml:ns:eppcom-1.0" schemaLocation="eppcom-1.0.xsd"/>
   <annotation>
     <documentation>
         Extensible Provisioning Protocol v1.0 schema.
       </documentation>
   </annotation>
-<!--
+  <!--
   Every EPP XML instance must begin with this element.
   -->
   <element name="epp" type="epp:eppType"/>
-<!--
+  <!--
   An EPP XML instance must contain a greeting, hello, command,
   response, or extension.
   -->
@@ -26,7 +26,7 @@
       <element name="extension" type="epp:extAnyType"/>
     </choice>
   </complexType>
-<!--
+  <!--
   A greeting is sent by a server in response to a client connection
   or <hello>.
   -->
@@ -38,7 +38,7 @@
       <element name="dcp" type="epp:dcpType"/>
     </sequence>
   </complexType>
-<!--
+  <!--
   Server IDs are strings with minimum and maximum length restrictions.
   -->
   <simpleType name="sIDType">
@@ -47,7 +47,7 @@
       <maxLength value="64"/>
     </restriction>
   </simpleType>
-<!--
+  <!--
   A server greeting identifies available object services.
   -->
   <complexType name="svcMenuType">
@@ -58,7 +58,7 @@
       <element name="svcExtension" type="epp:extURIType" minOccurs="0"/>
     </sequence>
   </complexType>
-<!--
+  <!--
   Data Collection Policy types.
   -->
   <complexType name="dcpType">
@@ -128,7 +128,7 @@
       <element name="relative" type="duration"/>
     </choice>
   </complexType>
-<!--
+  <!--
   Extension framework types.
   -->
   <complexType name="extAnyType">
@@ -141,7 +141,7 @@
       <element name="extURI" type="anyURI" maxOccurs="unbounded"/>
     </sequence>
   </complexType>
-<!--
+  <!--
   An EPP version number is a dotted pair of decimal numbers.
   -->
   <simpleType name="versionType">
@@ -150,7 +150,7 @@
       <enumeration value="1.0"/>
     </restriction>
   </simpleType>
-<!--
+  <!--
   Command types.
   -->
   <complexType name="commandType">
@@ -171,7 +171,7 @@
       <element name="clTRID" type="epp:trIDStringType" minOccurs="0"/>
     </sequence>
   </complexType>
-<!--
+  <!--
   The <login> command.
   -->
   <complexType name="loginType">
@@ -201,7 +201,7 @@
       <element name="svcExtension" type="epp:extURIType" minOccurs="0"/>
     </sequence>
   </complexType>
-<!--
+  <!--
   The <poll> command.
   -->
   <complexType name="pollType">
@@ -214,7 +214,7 @@
       <enumeration value="req"/>
     </restriction>
   </simpleType>
-<!--
+  <!--
   The <transfer> command.  This is object-specific, and uses attributes
   to identify the requested operation.
   -->
@@ -233,7 +233,7 @@
       <enumeration value="request"/>
     </restriction>
   </simpleType>
-<!--
+  <!--
   All other object-centric commands. EPP doesn't specify the syntax or
   semantics of object-centric command elements.  The elements MUST be
   described in detail in another schema specific to the object.
@@ -255,7 +255,7 @@
       <maxLength value="64"/>
     </restriction>
   </simpleType>
-<!--
+  <!--
   Response types.
   -->
   <complexType name="responseType">
@@ -303,7 +303,7 @@
     </sequence>
     <attribute name="lang" type="language" default="en"/>
   </complexType>
-<!--
+  <!--
   Human-readable text may be expressed in languages other than English.
   -->
   <complexType name="msgType">
@@ -313,7 +313,7 @@
       </extension>
     </simpleContent>
   </complexType>
-<!--
+  <!--
   EPP result codes.
   -->
   <simpleType name="resultCodeType">
@@ -354,7 +354,7 @@
       <enumeration value="2502"/>
     </restriction>
   </simpleType>
-<!--
+  <!--
   End of schema.
   -->
 </schema>

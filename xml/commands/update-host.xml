@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <epp xmlns="urn:ietf:params:xml:ns:epp-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:ietf:params:xml:ns:epp-1.0 epp-1.0.xsd">
-    <command>
-        <update>
-            <host:update xmlns:host="urn:ietf:params:xml:ns:host-1.0" xsi:schemaLocation="urn:ietf:params:xml:ns:host-1.0 host-1.0.xsd">
-                <host:name>ns.loopia.se</host:name>
-                <host:add>
-                    <host:addr ip="v4">10.10.10.10</host:addr>
-                </host:add>
-                <!-- <host:rem>
+  <command>
+    <update>
+      <host:update xmlns:host="urn:ietf:params:xml:ns:host-1.0" xsi:schemaLocation="urn:ietf:params:xml:ns:host-1.0 host-1.0.xsd">
+        <host:name>ns.loopia.se</host:name>
+        <host:add>
+          <host:addr ip="v4">10.10.10.10</host:addr>
+        </host:add>
+        <!-- <host:rem>
                     <host:addr ip="v4">10.10.10.10</host:addr>
                 </host:rem> -->
-            </host:update>
-        </update>
-        <clTRID>ABC-12345</clTRID>
-    </command>
+      </host:update>
+    </update>
+    <clTRID>ABC-12345</clTRID>
+  </command>
 </epp>

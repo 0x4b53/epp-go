@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schema xmlns:contact="urn:ietf:params:xml:ns:contact-1.0" xmlns:epp="urn:ietf:params:xml:ns:epp-1.0" xmlns:eppcom="urn:ietf:params:xml:ns:eppcom-1.0" xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:ietf:params:xml:ns:contact-1.0" elementFormDefault="qualified">
-<!--
+  <!--
   Import common element types.
   -->
   <import namespace="urn:ietf:params:xml:ns:eppcom-1.0"/>
@@ -11,7 +11,7 @@
         contact provisioning schema.
       </documentation>
   </annotation>
-<!--
+  <!--
   Child elements found in EPP commands.
   -->
   <element name="check" type="contact:mIDType"/>
@@ -20,7 +20,7 @@
   <element name="info" type="contact:authIDType"/>
   <element name="transfer" type="contact:authIDType"/>
   <element name="update" type="contact:updateType"/>
-<!--
+  <!--
   Utility types.
   -->
   <simpleType name="ccType">
@@ -57,7 +57,7 @@
       <maxLength value="255"/>
     </restriction>
   </simpleType>
-<!--
+  <!--
   Child elements of the <create> command.
   -->
   <complexType name="createType">
@@ -114,7 +114,7 @@
   <complexType name="intLocType">
     <attribute name="type" type="contact:postalInfoEnumType" use="required"/>
   </complexType>
-<!--
+  <!--
   Child element of commands that require only an identifier.
   -->
   <complexType name="sIDType">
@@ -122,7 +122,7 @@
       <element name="id" type="eppcom:clIDType"/>
     </sequence>
   </complexType>
-<!--
+  <!--
   Child element of commands that accept multiple identifiers.
   -->
   <complexType name="mIDType">
@@ -130,7 +130,7 @@
       <element name="id" type="eppcom:clIDType" maxOccurs="unbounded"/>
     </sequence>
   </complexType>
-<!--
+  <!--
   Child elements of the <info> and <transfer> commands.
   -->
   <complexType name="authIDType">
@@ -139,7 +139,7 @@
       <element name="authInfo" type="contact:authInfoType" minOccurs="0"/>
     </sequence>
   </complexType>
-<!--
+  <!--
   Child elements of the <update> command.
   -->
   <complexType name="updateType">
@@ -150,7 +150,7 @@
       <element name="chg" type="contact:chgType" minOccurs="0"/>
     </sequence>
   </complexType>
-<!--
+  <!--
   Data elements that can be added or removed.
   -->
   <complexType name="addRemType">
@@ -158,7 +158,7 @@
       <element name="status" type="contact:statusType" maxOccurs="7"/>
     </sequence>
   </complexType>
-<!--
+  <!--
   Data elements that can be changed.
   -->
   <complexType name="chgType">
@@ -179,7 +179,7 @@
     </sequence>
     <attribute name="type" type="contact:postalInfoEnumType" use="required"/>
   </complexType>
-<!--
+  <!--
   Child response elements.
   -->
   <element name="chkData" type="contact:chkDataType"/>
@@ -187,7 +187,7 @@
   <element name="infData" type="contact:infDataType"/>
   <element name="panData" type="contact:panDataType"/>
   <element name="trnData" type="contact:trnDataType"/>
-<!--
+  <!--
   <check> response elements.
   -->
   <complexType name="chkDataType">
@@ -208,7 +208,7 @@
       </extension>
     </simpleContent>
   </complexType>
-<!--
+  <!--
   <create> response elements.
   -->
   <complexType name="creDataType">
@@ -217,7 +217,7 @@
       <element name="crDate" type="dateTime"/>
     </sequence>
   </complexType>
-<!--
+  <!--
   <info> response elements.
   -->
   <complexType name="infDataType">
@@ -239,7 +239,7 @@
       <element name="disclose" type="contact:discloseType" minOccurs="0"/>
     </sequence>
   </complexType>
-<!--
+  <!--
   Status is a combination of attributes and an optional human-readable
   message that may be expressed in languages other than English.
   -->
@@ -267,7 +267,7 @@
       <enumeration value="serverUpdateProhibited"/>
     </restriction>
   </simpleType>
-<!--
+  <!--
   Pending action notification response elements.
   -->
   <complexType name="panDataType">
@@ -284,7 +284,7 @@
       </extension>
     </simpleContent>
   </complexType>
-<!--
+  <!--
   <transfer> response elements.
   -->
   <complexType name="trnDataType">
@@ -297,7 +297,7 @@
       <element name="acDate" type="dateTime"/>
     </sequence>
   </complexType>
-<!--
+  <!--
   End of schema.
   -->
 </schema>
