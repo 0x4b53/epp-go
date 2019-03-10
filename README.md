@@ -18,18 +18,8 @@ Example clients:
 * [Domainr EPP client in Go (WIP)](https://github.com/domainr/epp)
 * [python-epp-client](https://github.com/Darkfish/python-epp-client)
 
-Or just a library from a scripting language that supports reasonable oneliners
-like [`Net::EPP::Client`](https://metacpan.org/pod/Net::EPP::Client).
-
-```sh
-
-perl -MNet::EPP::Client -E \
-    'my $c = Net::EPP::Client->new(host => "localhost", port => 700, ssl => 1, frames => 1);
-    say $c->connect(SSL_verify_mode => 0, SSL_cert_file => $ENV{CERT}, SSL_key_file => $ENV{KEY});
-    $c->send_frame('login.xml');
-    say $c->get_frame;
-    '
-```
+Even this package includes a test client which can send XML to the EPP server
+although no validation or verificate is made.
 
 ## References
 
@@ -62,22 +52,8 @@ files from this repository linked below.
 
 ## Development and testing
 
-### Generate code
+XML files are linted with [`xmllint`](http://xmlsoft.org/xmllint.html).
 
-Generate from XSD
-
-```sh
-xsdgen -o types/types.gen.go xml/*
-```
-
-The `xsdgen` command creates a base type from the XSD files (`EppType`). I want
-to use this type to encode XML but to omit fields not used we mark all fields
-as pointers to allow nil values.
-
-```sh
-sed -i 's/\(Greeting\s\+\)\(.\+\)"/\1*\2,omitempty"/' types/types.gen.go
-sed -i 's/\(Hello\s\+\)\(.\+\)"/\1*\2,omitempty"/'    types/types.gen.go
-sed -i 's/\(Command\s\+\)\(.\+\)"/\1*\2,omitempty"/'  types/types.gen.go
-sed -i 's/\(Response\s\+\)\(.\+\)"/\1*\2,omitempty"/' types/types.gen.go
-sed -i 's/\(Extension\s\+\)\(.\+\)extension"/\1*\2extension,omitempty"/' types/types.gen.go
-```
+To validate XML [`libxml2` (bindings for
+Go)](https://github.com/lestrrat-go/libxml2/) is used. This package requires you
+to install the [`libxml2`](http://xmlsoft.org/downloads.html) C bindings.

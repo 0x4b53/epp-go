@@ -57,7 +57,10 @@ func TestServer(t *testing.T) {
 	assert.Equal(t, string(greeting), "hello")
 
 	for i := 0; i < 5; i++ {
-		data := fmt.Sprintf("message %d", i)
+		data := fmt.Sprintf(`<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+		<epp xmlns="urn:ietf:params:xml:ns:epp-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:ietf:params:xml:ns:epp-1.0 epp-1.0.xsd">
+		  <hello>message %d</hello>
+		</epp>`, i)
 		response, err := client.Send([]byte(data))
 		assert.Nil(t, err)
 		assert.Equal(t, fmt.Sprintf("response: %s", data), string(response))
