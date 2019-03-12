@@ -2,8 +2,11 @@ package epp
 
 import (
 	"crypto/tls"
+	"log"
 	"net"
 	"time"
+
+	xsd "github.com/lestrrat-go/libxml2/xsd"
 )
 
 type HandlerFunc func(*Session, []byte) ([]byte, error)
@@ -93,6 +96,12 @@ func (s *Session) run() error {
 
 		if s.validator != nil {
 			if err := s.validator.Validate(message); err != nil {
+				if xErr, ok := err.(xsd.SchemaValidationError); ok {
+					for _, e := range xErr.Errors() {
+						log.Printf("error: %s", e.Error())
+					}
+				}
+
 				return err
 			}
 		}
