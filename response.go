@@ -35,15 +35,15 @@ func (s *Server) Encode(data interface{}, ns map[string]string) ([]byte, error) 
 	registeredNamespaces := []xml.Attr{
 		{
 			Name: xml.Name{
-				Space: "xsi",
-				Local: "",
+				Space: "",
+				Local: "xmlns",
 			},
 			Value: "urn:ietf:params:xml:ns:epp-1.0",
 		},
 		{
 			Name: xml.Name{
-				Space: "xsi",
-				Local: "",
+				Space: "",
+				Local: "xsi",
 			},
 			Value: "http://www.w3.org/2001/XMLSchema-instance",
 		},
