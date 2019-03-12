@@ -8,6 +8,9 @@
         <domain:registrant>registrant-00001</domain:registrant>
         <domain:contact type="tech">contact-00001</domain:contact>
         <domain:contact type="admin">contact-00002</domain:contact>
+        <domain:authInfo>
+          <domain:pw>some-password</domain:pw>
+        </domain:authInfo>
       </domain:create>
     </create>
     <clTRID>ABC-12345</clTRID>

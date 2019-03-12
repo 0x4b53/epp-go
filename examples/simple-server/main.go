@@ -6,6 +6,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"crypto/x509/pkix"
+	"encoding/xml"
 	"fmt"
 	"log"
 	"math/big"
@@ -17,18 +18,11 @@ import (
 	"github.com/pkg/errors"
 
 	epp "github.com/bombsimon/epp-go"
+	"github.com/bombsimon/epp-go/types"
 )
 
 func main() {
 	mux := epp.NewMux()
-	mux.AddHandler("command/login", func(s *epp.Session, data []byte) ([]byte, error) {
-		// Do stuff.
-		return []byte("login"), nil
-	})
-	mux.AddHandler("command/check/contact", func(s *epp.Session, data []byte) ([]byte, error) {
-		// Do stuff.
-		return []byte("contact-check"), nil
-	})
 
 	server := epp.Server{
 		IdleTimeout:      5 * time.Minute,
@@ -52,6 +46,23 @@ func main() {
 
 		return server.Encode(server.GreetResponse(), map[string]string{})
 	}
+
+	mux.AddHandler("command/login", func(s *epp.Session, data []byte) ([]byte, error) {
+		// Do stuff.
+		return []byte("login"), nil
+	})
+
+	mux.AddHandler("command/create/domain", func(s *epp.Session, data []byte) ([]byte, error) {
+		dc := types.DomainCreate{}
+		if err := xml.Unmarshal(data, &dc); err != nil {
+			return nil, err
+		}
+
+		return server.Encode(
+			server.CreateResponse(epp.EppUnimplementedCommand, "not yet implemented"),
+			map[string]string{},
+		)
+	})
 
 	// Support graceful shutdown.
 	go func() {
