@@ -32,6 +32,17 @@ func main() {
 
 	fmt.Println(string(greeting))
 
+	fmt.Println("> Automatic login!")
+	time.Sleep(1 * time.Second)
+
+	response, err := client.Login("some-user", "some-password")
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(1)
+	}
+
+	fmt.Println(string(response))
+
 	for {
 		scnr := bufio.NewScanner(os.Stdin)
 		scnr.Split(func(data []byte, _ bool) (int, []byte, error) {

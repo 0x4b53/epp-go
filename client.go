@@ -4,6 +4,8 @@ import (
 	"crypto/tls"
 	"net"
 	"time"
+
+	"github.com/bombsimon/epp-go/types"
 )
 
 type Client struct {
@@ -47,4 +49,36 @@ func (c *Client) Send(data []byte) ([]byte, error) {
 	}
 
 	return msg, nil
+}
+
+// Login will perform a login to an EPP server.
+func (c *Client) Login(username, password string) ([]byte, error) {
+	login := types.Login{
+		ClientID: username,
+		Password: password,
+		Options: types.LoginOptions{
+			Version:  "1.0",
+			Language: "en",
+		},
+		Services: types.LoginServices{
+			ObjectURI: []string{
+				"urn:ietf:params:xml:ns:domain-1.0",
+				"urn:ietf:params:xml:ns:contact-1.0",
+				"urn:ietf:params:xml:ns:host-1.0",
+			},
+			ServiceExtension: types.LoginServiceExtension{
+				ExtensionURI: []string{
+					"urn:ietf:params:xml:ns:secDNS-1.0",
+					"urn:ietf:params:xml:ns:secDNS-1.1",
+				},
+			},
+		},
+	}
+
+	encoded, err := Encode(login, ClientXMLAttributes())
+	if err != nil {
+		return nil, err
+	}
+
+	return c.Send(encoded)
 }

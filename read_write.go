@@ -1,12 +1,16 @@
 package epp
 
 import (
+	"bytes"
 	"encoding/binary"
+	"encoding/xml"
 	"errors"
 	"io"
 	"math"
 	"net"
 	"time"
+
+	"github.com/bombsimon/epp-go/types"
 )
 
 // ReadMessage reads one full message from r.
@@ -66,4 +70,87 @@ func WriteMessage(conn net.Conn, data []byte) error {
 	}
 
 	return nil
+}
+
+// ServerXMLAttributes defines the default attributes from the server response.
+func ServerXMLAttributes() []xml.Attr {
+	return []xml.Attr{
+		{
+			Name: xml.Name{
+				Space: "",
+				Local: "xmlns",
+			},
+			Value: "urn:ietf:params:xml:ns:epp-1.0",
+		},
+		{
+			Name: xml.Name{
+				Space: "",
+				Local: "xsi",
+			},
+			Value: "http://www.w3.org/2001/XMLSchema-instance",
+		},
+		{
+			Name: xml.Name{
+				Space: "xsi",
+				Local: "schemaLocation",
+			},
+			Value: "urn:ietf:params:xml:ns:epp-1.0 epp-1.0.xsd",
+		},
+	}
+}
+
+// ClientXMLAttributes defines the default attributes in the client request.
+func ClientXMLAttributes() []xml.Attr {
+	return []xml.Attr{
+		{
+			Name: xml.Name{
+				Space: "",
+				Local: "xmlns",
+			},
+			Value: "urn:ietf:params:xml:ns:epp-1.0",
+		},
+	}
+}
+
+// Encode will take a type that can be marshalled to XML, add the EPP staring
+// tag for all registered namespaces and return the XML as a byte slice.
+func Encode(data interface{}, xmlAttributes []xml.Attr) ([]byte, error) {
+	// Create a buffer, write the default XML header and encode the data with
+	// an indent of 2 spaces and preserved newlines.
+	buf := bytes.Buffer{}
+	buf.WriteString(xml.Header)
+
+	enc := xml.NewEncoder(&buf)
+	enc.Indent("", "  ")
+
+	err := enc.EncodeElement(data, xml.StartElement{
+		Name: xml.Name{
+			Space: "",
+			Local: "epp",
+		},
+		Attr: xmlAttributes,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
+}
+
+// CreateResponse will create a response with a given code, message and value
+// which may be marshalled to XML and pass to WriteMessage to write a proper EPP
+// response to the socket.
+func CreateResponse(code ResultCode, reason string) types.Response {
+	return types.Response{
+		Result: []types.Result{
+			{
+				Code:    code.Code(),
+				Message: code.Message(),
+				ExternalValue: types.ExternalErrorValue{
+					Reason: reason,
+				},
+			},
+		},
+	}
 }
