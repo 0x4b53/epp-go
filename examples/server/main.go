@@ -33,36 +33,11 @@ func main() {
 			Certificates: []tls.Certificate{generateCertificate()},
 			ClientAuth:   tls.RequireAnyClientCert,
 		},
+		Greeting: greeting,
 	}
 
-	server.Greeting = func(s *epp.Session) ([]byte, error) {
-		err := verifyClientCertificate(s.ConnectionState().PeerCertificates)
-		if err != nil {
-			_ = s.Close()
-
-			fmt.Println("could not verify peer certificates")
-			return nil, errors.New("could not verify certificates")
-		}
-
-		return server.Encode(server.GreetResponse(), map[string]string{})
-	}
-
-	mux.AddHandler("command/login", func(s *epp.Session, data []byte) ([]byte, error) {
-		// Do stuff.
-		return []byte("login"), nil
-	})
-
-	mux.AddHandler("command/create/domain", func(s *epp.Session, data []byte) ([]byte, error) {
-		dc := types.DomainCreate{}
-		if err := xml.Unmarshal(data, &dc); err != nil {
-			return nil, err
-		}
-
-		return server.Encode(
-			server.CreateResponse(epp.EppUnimplementedCommand, "not yet implemented"),
-			map[string]string{},
-		)
-	})
+	mux.AddHandler("command/login", login)
+	mux.AddHandler("command/create/domain", createDomain)
 
 	// Support graceful shutdown.
 	go func() {
@@ -76,6 +51,59 @@ func main() {
 	if err := server.ListenAndServe(); err != nil {
 		log.Fatal(err.Error())
 	}
+}
+
+func greeting(s *epp.Session) ([]byte, error) {
+	err := verifyClientCertificate(s.ConnectionState().PeerCertificates)
+	if err != nil {
+		_ = s.Close()
+
+		fmt.Println("could not verify peer certificates")
+		return nil, errors.New("could not verify certificates")
+	}
+
+	greeting := types.EPPGreeting{
+		Greeting: types.Greeting{
+			ServerID:   "default-server",
+			ServerDate: time.Now(),
+			ServiceMenu: types.ServiceMenu{
+				Version: []string{"1.0"},
+			},
+		},
+	}
+
+	return epp.Encode(greeting, epp.ServerXMLAttributes())
+}
+
+func login(s *epp.Session, data []byte) ([]byte, error) {
+	login := types.Login{}
+	if err := xml.Unmarshal(data, &login); err != nil {
+		return nil, err
+	}
+
+	// Authenticate the user found in login type.
+
+	return epp.Encode(
+		epp.CreateResponse(
+			epp.EppOk,
+			fmt.Sprintf("user '%s' signed in with password '%s'", login.ClientID, login.Password),
+		),
+		epp.ServerXMLAttributes(),
+	)
+}
+
+func createDomain(s *epp.Session, data []byte) ([]byte, error) {
+	dc := types.DomainCreate{}
+	if err := xml.Unmarshal(data, &dc); err != nil {
+		return nil, err
+	}
+
+	// Do stuff with dc which holds all (validated) domain create data.
+
+	return epp.Encode(
+		epp.CreateResponse(epp.EppUnimplementedCommand, "not yet implemented"),
+		epp.ServerXMLAttributes(),
+	)
 }
 
 func verifyClientCertificate(certs []*x509.Certificate) error {
