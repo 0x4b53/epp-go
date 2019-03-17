@@ -1,31 +1,52 @@
 package types
 
+import "time"
+
 // DomainCheck represents a check for domain(s).
 type DomainCheck struct {
-	Names []string `xml:"command>check>check>name,omitempty"`
+	Names []string `xml:"command>check>domain:check>name"`
 }
 
 // DomainCreate represents a domain create command.
 type DomainCreate struct {
-	Name        string       `xml:"command>create>create>name,omitempty"`
-	Period      Period       `xml:"command>create>create>period,omitempty"`
-	NameServers []NameServer `xml:"command>create>create>ns,omitempty"`
-	Registrant  string       `xml:"command>create>create>registrant,omitempty"`
-	Contacts    []Contact    `xml:"command>create>create>contact,omitempty"`
-	AuthInfo    AuthInfo     `xml:"command>create>create>authInfo,omitempty"`
+	Name       string     `xml:"command>create>domain:create>name"`
+	Period     Period     `xml:"command>create>domain:create>period,omitempty"`
+	NameServer NameServer `xml:"command>create>domain:create>ns,omitempty"`
+	Registrant string     `xml:"command>create>domain:create>registrant,omitempty"`
+	Contacts   []Contact  `xml:"command>create>domain:create>contact,omitempty"`
+	AuthInfo   AuthInfo   `xml:"command>create>domain:create>authInfo,omitempty"`
 }
 
 // DomainDelete represents a domain delete command.
-type DomainDelete struct{}
+type DomainDelete struct {
+	Name string `xml:"command>delete>domain:delete>name"`
+}
 
 // DomainInfo represents a domain info command.
-type DomainInfo struct{}
+type DomainInfo struct {
+	Name     InfoName `xml:"command>info>domain:info>name"`
+	AuthInfo AuthInfo `xml:"command>create>domain:create>authInfo,omitempty"`
+}
+
+// InfoName ...
+type InfoName struct {
+	Name  string `xml:",chardata"`
+	Hosts string `xml:"hosts,attr"` // TODO: Custom enum type (all, del, none, sub)
+}
 
 // DomainRenew represents a domain renew command.
-type DomainRenew struct{}
+type DomainRenew struct {
+	Name       string    `xml:"command>renew>domain:renew>name"`
+	ExpiryDate time.Time `xml:"command>renew>domain:renew>curExpDate"`
+	Period     Period    `xml:"command>renew>domain:renew>period,omitempty"`
+}
 
 // DomainTransfer represents a domain transfer command.
-type DomainTransfer struct{}
+type DomainTransfer struct {
+	Name     string   `xml:"command>transfer>domain:transfer>name"`
+	Period   Period   `xml:"command>transfer>domain:transfer>period,omitempty"`
+	Authinfo AuthInfo `xml:"command>transfer>domain:transfer>authInfo,omitempty"`
+}
 
 // DomainUpdate represents a domain update command.
 type DomainUpdate struct{}
@@ -44,8 +65,8 @@ type NameServer struct {
 
 // HostAttribute represents attributes for a host for a domain.
 type HostAttribute struct {
-	HostName    string `xml:"hostName"`
-	HostAddress string `xml:"hostAddr"`
+	HostName    string   `xml:"hostName"`
+	HostAddress []string `xml:"hostAddr"`
 }
 
 // Contact represents a contact for a domain.
