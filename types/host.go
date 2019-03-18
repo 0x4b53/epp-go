@@ -31,8 +31,8 @@ type HostUpdate struct {
 
 // HostName ...
 type HostName struct {
-	Name     string `xml:",chardata"`
-	PaResult bool   `xml:"paResult,attr,omitempty"`
+	Name                    string `xml:",chardata"`
+	PendingActivationResult bool   `xml:"paResult,attr,omitempty"`
 }
 
 // HostAddress ...
