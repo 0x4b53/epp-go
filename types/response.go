@@ -11,13 +11,13 @@ type Response struct {
 	TransactionID TransactionID `xml:"response>trID"`
 }
 
-// TransactionID ...
+// TransactionID represents transaction IDs for the client and the server.
 type TransactionID struct {
 	ClientTransactionID string `xml:"clTRID"`
 	ServerTransactionID string `xml:"svTRID"`
 }
 
-// MessageQueue ...
+// MessageQueue represents a message queue for client retrieval.
 type MessageQueue struct {
 	QueueDate time.Time `xml:"qDate"`
 	Message   string    `xml:"msg"`

@@ -16,7 +16,6 @@ type LoginOptions struct {
 }
 
 // LoginServices represents services used while logging in
-// LoginServices represents services used while logging in
 type LoginServices struct {
 	ObjectURI        []string              `xml:"objURI"`
 	ServiceExtension LoginServiceExtension `xml:"svcExtension"`

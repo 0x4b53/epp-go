@@ -57,29 +57,30 @@ type HostUpdate struct {
 	Change string         `xml:"command>update>update>chg>name,omitempty"`
 }
 
-// HostAddRemove ...
+// HostAddRemove represents data that can be added or removed while updating a
+// domain.
 type HostAddRemove struct {
 	Address []HostAddress `xml:"addr,omitempty"`
 }
 
-// HostAddress ...
+// HostAddress represents an IP address beloning to a host.
 type HostAddress struct {
 	Address string `xml:",chardata,omitempty"`
 	IP      IPType `xml:"ip,attr"`
 }
 
-// HostCheckData ...
+// HostCheckData represents the response for a host check command.
 type HostCheckData struct {
-	Name []CheckHost `xml:"chkData>cd"`
+	Name []CheckType `xml:"chkData>cd"`
 }
 
-// HostCreateData ...
+// HostCreateData represents the response for a host create command.
 type HostCreateData struct {
 	Name       string    `xml:"creData>name"`
 	CreateDate time.Time `xml:"creData>crDate"`
 }
 
-// HostInfoData ...
+// HostInfoData represents the response for a host info command.
 type HostInfoData struct {
 	Name         string        `xml:"infData>name"`
 	ROID         string        `xml:"infData>roid"`
@@ -93,35 +94,9 @@ type HostInfoData struct {
 	TransferDate time.Time     `xml:"infData>trDate,omitempty"`
 }
 
-// HostPendingActivationNotificationData ...
-type HostPendingActivationNotificationData struct {
-	Name          HostPendingActivationNotificationName `xml:"panData>name"`
-	TransactionID string                                `xml:"panData>paTRID"`
-	Date          time.Time                             `xml:"panData>paDate"`
-}
-
-// CheckHost ...
-type CheckHost struct {
-	Name   CheckHostName `xml:"name"`
-	Reason string        `xml:"reason,omitempty"`
-}
-
-// CheckHostName ...
-type CheckHostName struct {
-	Value     string `xml:",chardata"`
-	Available bool   `xml:"avail,attr"`
-}
-
-// HostStatus represents statuses for a domain.
+// HostStatus represents statuses for a host.
 type HostStatus struct {
 	Status         string         `xml:",chardata"`
 	HostStatusType HostStatusType `xml:"s,attr"`
 	Language       string         `xml:"lang,attr"`
-}
-
-// HostPendingActivationNotificationName represents the host name tag in a pending
-// activation notification response.
-type HostPendingActivationNotificationName struct {
-	Name                    string `xml:",chardata"`
-	PendingActivationResult bool   `xml:"paResult,attr,omitempty"`
 }

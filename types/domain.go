@@ -1,8 +1,6 @@
 package types
 
-import (
-	"time"
-)
+import "time"
 
 // DomainStatusType represents available status values.
 type DomainStatusType string
@@ -99,7 +97,25 @@ type DomainTransfer struct {
 }
 
 // DomainUpdate represents a domain update command.
-type DomainUpdate struct{}
+type DomainUpdate struct {
+	Name   string           `xml:"command>update>update>name"`
+	Add    *DomainAddRemove `xml:"command>update>update>add,omitempty"`
+	Remove *DomainAddRemove `xml:"command>update>update>rem,omitempty"`
+	Change *DomainChange    `xml:"command>update>update>chg,omitempty"`
+}
+
+// DomainAddRemove ...
+type DomainAddRemove struct {
+	NameServer NameServer     `xml:"ns,omitempty"`
+	Contact    []Contact      `xml:"contact,omitempty"`
+	Status     []DomainStatus `xml:"status,omitempty"`
+}
+
+// DomainChange ...
+type DomainChange struct {
+	Registrant string   `xml:"registrant,omitempty"`
+	AuthInfo   AuthInfo `xml:"authInfo,omitempty"`
+}
 
 // Period represents the period unit and value.
 type Period struct {
@@ -133,7 +149,7 @@ type AuthInfo struct {
 
 // DomainCheckData represents the response data for a domain check command.
 type DomainCheckData struct {
-	CheckDomain []CheckDomain `xml:"chkData>cd"`
+	CheckDomain []CheckType `xml:"chkData>cd"`
 }
 
 // DomainCreateData represents the response data for a domain create command.
@@ -165,9 +181,9 @@ type DomainInfoData struct {
 // DomainPendingActivationNotificationData represents the response data for a
 // domain pan command.
 type DomainPendingActivationNotificationData struct {
-	Name          DomainPendingActivationNotificationName `xml:"panData>name"`
-	TransactionID string                                  `xml:"panData>paTRID"`
-	Date          time.Time                               `xml:"panData>paDate"`
+	Name          PendingActivationNotificationName `xml:"panData>name"`
+	TransactionID string                            `xml:"panData>paTRID"`
+	Date          time.Time                         `xml:"panData>paDate"`
 }
 
 // DomainRenewData represents the response data for a domain renew command.
@@ -185,25 +201,6 @@ type DomainTransferData struct {
 	ActingID       string                   `xml:"trnData>acID"`
 	ActingDate     string                   `xml:"trnData>acDate"`
 	ExpireDate     string                   `xml:"trnData>exDate,omitempty"`
-}
-
-// DomainPendingActivationNotificationName represents the domain name tag in a
-// pending activation notificateion response.
-type DomainPendingActivationNotificationName struct {
-	Name                    string `xml:",chardata"`
-	PendingActivationResult bool   `xml:"paResult,attr,omitempty"`
-}
-
-// CheckDomain ...
-type CheckDomain struct {
-	Name   CheckDomainName `xml:"name"`
-	Reason string          `xml:"reason,omitempty"`
-}
-
-// CheckDomainName ...
-type CheckDomainName struct {
-	Value     string `xml:",chardata"`
-	Available bool   `xml:"avail,attr"`
 }
 
 // DomainStatus represents statuses for a domain.
