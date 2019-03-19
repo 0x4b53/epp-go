@@ -30,18 +30,18 @@ const (
 
 // HostCheck represents a host check request to the EPP server.
 type HostCheck struct {
-	Names []string `xml:"command>check>host:check>name"`
+	Names []string `xml:"command>check>check>name"`
 }
 
 // HostCreate represents a host create request to the EPP server.
 type HostCreate struct {
-	Name    string               `xml:"command>create>host:create>host:name"`
-	Address HostAddRemoveAddress `xml:"command>create>host:create>host:addr,omitempty"`
+	Name    string      `xml:"command>create>create>name"`
+	Address HostAddress `xml:"command>create>create>addr,omitempty"`
 }
 
 // HostDelete represents a host delete request to the EPP server.
 type HostDelete struct {
-	Name string `xml:"command>delete>host:delete>name"`
+	Name string `xml:"command>delete>delete>name"`
 }
 
 // HostInfo represents a host info request to the EPP server.
@@ -51,59 +51,59 @@ type HostInfo struct {
 
 // HostUpdate represents a host update request to the EPP server.
 type HostUpdate struct {
-	Name   string         `xml:"command>update>host:update>host:name"`
-	Add    *HostAddRemove `xml:"command>update>host:update>host:add,omitempty"`
-	Remove *HostAddRemove `xml:"command>update>host:update>host:rem,omitempty"`
-	Change string         `xml:"command>update>host:update>host:chg>host:name,omitempty"`
+	Name   string         `xml:"command>update>update>name"`
+	Add    *HostAddRemove `xml:"command>update>update>add,omitempty"`
+	Remove *HostAddRemove `xml:"command>update>update>rem,omitempty"`
+	Change string         `xml:"command>update>update>chg>name,omitempty"`
 }
 
 // HostAddRemove ...
 type HostAddRemove struct {
-	Address []HostAddRemoveAddress `xml:"host:addr,omitempty"`
+	Address []HostAddress `xml:"addr,omitempty"`
 }
 
-// HostAddRemoveAddress ...
-type HostAddRemoveAddress struct {
+// HostAddress ...
+type HostAddress struct {
 	Address string `xml:",chardata,omitempty"`
 	IP      IPType `xml:"ip,attr"`
 }
 
 // HostCheckData ...
 type HostCheckData struct {
-	Name []CheckHost `xml:"host:chkData>host:cd"`
+	Name []CheckHost `xml:"chkData>cd"`
 }
 
 // HostCreateData ...
 type HostCreateData struct {
-	Name       string    `xml:"host:creData>host:name"`
-	CreateDate time.Time `xml:"host:creData>host:crDate"`
+	Name       string    `xml:"creData>name"`
+	CreateDate time.Time `xml:"creData>crDate"`
 }
 
 // HostInfoData ...
 type HostInfoData struct {
-	Name         string                 `xml:"host:infData>host:name"`
-	ROID         string                 `xml:"host:infData>host:roid"`
-	Status       []HostStatus           `xml:"host:infData>host:status"`
-	Address      []HostAddRemoveAddress `xml:"host:infData>host:addr,omitempty"`
-	ClientID     string                 `xml:"host:infData>host:clID"`
-	CreateID     string                 `xml:"host:infData>host:crID"`
-	CreateDate   time.Time              `xml:"host:infData>host:crDate"`
-	UpdateID     string                 `xml:"host:infData>host:upID,omitempty"`
-	UpdateDate   time.Time              `xml:"host:infData>host:upDate,omitempty"`
-	TransferDate time.Time              `xml:"host:infData>host:trDate,omitempty"`
+	Name         string        `xml:"infData>name"`
+	ROID         string        `xml:"infData>roid"`
+	Status       []HostStatus  `xml:"infData>status"`
+	Address      []HostAddress `xml:"infData>addr,omitempty"`
+	ClientID     string        `xml:"infData>clID"`
+	CreateID     string        `xml:"infData>crID"`
+	CreateDate   time.Time     `xml:"infData>crDate"`
+	UpdateID     string        `xml:"infData>upID,omitempty"`
+	UpdateDate   time.Time     `xml:"infData>upDate,omitempty"`
+	TransferDate time.Time     `xml:"infData>trDate,omitempty"`
 }
 
 // HostPendingActivationNotificationData ...
 type HostPendingActivationNotificationData struct {
-	Name          HostPendingActivationNotificationName `xml:"host:panData>host:name"`
-	TransactionID string                                `xml:"host:panData>host:paTRID"`
-	Date          time.Time                             `xml:"host:panData>host:paDate"`
+	Name          HostPendingActivationNotificationName `xml:"panData>name"`
+	TransactionID string                                `xml:"panData>paTRID"`
+	Date          time.Time                             `xml:"panData>paDate"`
 }
 
 // CheckHost ...
 type CheckHost struct {
-	Name   CheckHostName `xml:"host:name"`
-	Reason string        `xml:"host:reason,omitempty"`
+	Name   CheckHostName `xml:"name"`
+	Reason string        `xml:"reason,omitempty"`
 }
 
 // CheckHostName ...

@@ -54,48 +54,48 @@ const (
 
 // DomainCheck represents a check for domain(s).
 type DomainCheck struct {
-	Names []string `xml:"command>check>domain:check>domain:name"`
+	Names []string `xml:"command>check>check>name"`
 }
 
 // DomainCreate represents a domain create command.
 type DomainCreate struct {
-	Name       string     `xml:"command>create>domain:create>domain:name"`
-	Period     Period     `xml:"command>create>domain:create>domain:period,omitempty"`
-	NameServer NameServer `xml:"command>create>domain:create>domain:ns,omitempty"`
-	Registrant string     `xml:"command>create>domain:create>domain:registrant,omitempty"`
-	Contacts   []Contact  `xml:"command>create>domain:create>domain:contact,omitempty"`
-	AuthInfo   AuthInfo   `xml:"command>create>domain:create>domain:authInfo,omitempty"`
+	Name       string     `xml:"command>create>create>name"`
+	Period     Period     `xml:"command>create>create>period,omitempty"`
+	NameServer NameServer `xml:"command>create>create>ns,omitempty"`
+	Registrant string     `xml:"command>create>create>registrant,omitempty"`
+	Contacts   []Contact  `xml:"command>create>create>contact,omitempty"`
+	AuthInfo   AuthInfo   `xml:"command>create>create>authInfo,omitempty"`
 }
 
 // DomainDelete represents a domain delete command.
 type DomainDelete struct {
-	Name string `xml:"command>delete>domain:delete>domain:name"`
+	Name string `xml:"command>delete>delete>name"`
 }
 
 // DomainInfo represents a domain info command.
 type DomainInfo struct {
-	Name     DomainInfoName `xml:"command>info>domain:info>domain:name"`
-	AuthInfo AuthInfo       `xml:"command>create>domain:create>domain:authInfo,omitempty"`
+	Name     DomainInfoName `xml:"command>info>info>name"`
+	AuthInfo AuthInfo       `xml:"command>create>create>authInfo,omitempty"`
 }
 
 // DomainInfoName represents a domain name in a domain info response.
 type DomainInfoName struct {
 	Name  string          `xml:",chardata"`
-	Hosts DomainHostsType `xml:"domain:hosts,attr"`
+	Hosts DomainHostsType `xml:"hosts,attr"`
 }
 
 // DomainRenew represents a domain renew command.
 type DomainRenew struct {
-	Name       string    `xml:"command>renew>domain:renew>domain:name"`
-	ExpireDate time.Time `xml:"command>renew>domain:renew>domain:curExpDate"`
-	Period     Period    `xml:"command>renew>domain:renew>domain:period,omitempty"`
+	Name       string    `xml:"command>renew>renew>name"`
+	ExpireDate time.Time `xml:"command>renew>renew>curExpDate"`
+	Period     Period    `xml:"command>renew>renew>period,omitempty"`
 }
 
 // DomainTransfer represents a domain transfer command.
 type DomainTransfer struct {
-	Name     string   `xml:"command>transfer>domain:transfer>domain:name"`
-	Period   Period   `xml:"command>transfer>domain:transfer>domain:period,omitempty"`
-	Authinfo AuthInfo `xml:"command>transfer>domain:transfer>domain:authInfo,omitempty"`
+	Name     string   `xml:"command>transfer>transfer>name"`
+	Period   Period   `xml:"command>transfer>transfer>period,omitempty"`
+	Authinfo AuthInfo `xml:"command>transfer>transfer>authInfo,omitempty"`
 }
 
 // DomainUpdate represents a domain update command.
@@ -109,14 +109,14 @@ type Period struct {
 
 // NameServer represents a name server for a domain.
 type NameServer struct {
-	HostObject    string        `xml:"domain:hostObj,omitempty"`
-	HostAttribute HostAttribute `xml:"domain:hostAttr,omitempty"`
+	HostObject    []string        `xml:"hostObj,omitempty"`
+	HostAttribute []HostAttribute `xml:"hostAttr,omitempty"`
 }
 
 // HostAttribute represents attributes for a host for a domain.
 type HostAttribute struct {
-	HostName    string   `xml:"domain:hostName"`
-	HostAddress []string `xml:"domain:hostAddr"`
+	HostName    string        `xml:"hostName"`
+	HostAddress []HostAddress `xml:"hostAddr"`
 }
 
 // Contact represents a contact for a domain.
@@ -127,64 +127,64 @@ type Contact struct {
 
 // AuthInfo represents authentication information used when transferring domain.
 type AuthInfo struct {
-	Password  string `xml:"domain:pw,omitempty"`
-	Extension string `xml:"domain:ext,omitempty"`
+	Password  string `xml:"pw,omitempty"`
+	Extension string `xml:"ext,omitempty"`
 }
 
 // DomainCheckData represents the response data for a domain check command.
 type DomainCheckData struct {
-	CheckDomain []CheckDomain `xml:"domain:chkData>domain:cd"`
+	CheckDomain []CheckDomain `xml:"chkData>cd"`
 }
 
 // DomainCreateData represents the response data for a domain create command.
 type DomainCreateData struct {
-	Name       string    `xml:"domain:creData>domain:name"`
-	CreateDate time.Time `xml:"domain:creData>domain:crDate"`
-	ExpireDate time.Time `xml:"domain:creData>domain:exDate"`
+	Name       string    `xml:"creData>name"`
+	CreateDate time.Time `xml:"creData>crDate"`
+	ExpireDate time.Time `xml:"creData>exDate"`
 }
 
 // DomainInfoData represents the response data for a domain info command.
 type DomainInfoData struct {
-	Name         string         `xml:"domain:infData>domain:name"`
-	ROID         string         `xml:"domain:infData>domain:roid"`
-	Status       []DomainStatus `xml:"domain:infData>domain:status,omitempty"`
-	Registrant   string         `xml:"domain:infData>domain:registrant,omitempty"`
-	Contact      []Contact      `xml:"domain:infData>domain:contact,omitempty"`
-	NameServer   NameServer     `xml:"domain:infData>domain:ns"`
-	Host         []string       `xml:"domain:infData>domain:host,omitempty"`
-	ClientID     string         `xml:"domain:infData>domain:clID"`
-	CreateID     string         `xml:"domain:infData>domain:crID,omitempty"`
-	CreateDate   time.Time      `xml:"domain:infData>domain:crDate,omitempty"`
-	UpdateID     time.Time      `xml:"domain:infData>domain:upID,omitempty"`
-	UpdateDate   time.Time      `xml:"domain:infData>domain:upDate,omitempty"`
-	ExpireDate   time.Time      `xml:"domain:infData>domain:exDate,omitempty"`
-	TransferDate time.Time      `xml:"domain:infData>domain:trDate,omitempty"`
-	AuthInfo     AuthInfo       `xml:"domain:infData>domain:authInfo,omitempty"`
+	Name         string         `xml:"infData>name"`
+	ROID         string         `xml:"infData>roid"`
+	Status       []DomainStatus `xml:"infData>status,omitempty"`
+	Registrant   string         `xml:"infData>registrant,omitempty"`
+	Contact      []Contact      `xml:"infData>contact,omitempty"`
+	NameServer   NameServer     `xml:"infData>ns"`
+	Host         []string       `xml:"infData>host,omitempty"`
+	ClientID     string         `xml:"infData>clID"`
+	CreateID     string         `xml:"infData>crID,omitempty"`
+	CreateDate   time.Time      `xml:"infData>crDate,omitempty"`
+	UpdateID     time.Time      `xml:"infData>upID,omitempty"`
+	UpdateDate   time.Time      `xml:"infData>upDate,omitempty"`
+	ExpireDate   time.Time      `xml:"infData>exDate,omitempty"`
+	TransferDate time.Time      `xml:"infData>trDate,omitempty"`
+	AuthInfo     AuthInfo       `xml:"infData>authInfo,omitempty"`
 }
 
 // DomainPendingActivationNotificationData represents the response data for a
 // domain pan command.
 type DomainPendingActivationNotificationData struct {
-	Name          DomainPendingActivationNotificationName `xml:"domain:panData>domain:name"`
-	TransactionID string                                  `xml:"domain:panData>domain:paTRID"`
-	Date          time.Time                               `xml:"domain:panData>domain:paDate"`
+	Name          DomainPendingActivationNotificationName `xml:"panData>name"`
+	TransactionID string                                  `xml:"panData>paTRID"`
+	Date          time.Time                               `xml:"panData>paDate"`
 }
 
 // DomainRenewData represents the response data for a domain renew command.
 type DomainRenewData struct {
-	Name       string    `xml:"domain:renData>domain:name"`
-	ExpireDate time.Time `xml:"domain:renData>domain:exDate"`
+	Name       string    `xml:"renData>name"`
+	ExpireDate time.Time `xml:"renData>exDate"`
 }
 
 // DomainTransferData represents the response data for a domain transfer command.
 type DomainTransferData struct {
-	Name           string                   `xml:"domain:trnData>domain:name"`
-	TransferStatus DomainTransferStatusType `xml:"domain:trnData>domain:trStatus"`
-	RequestingID   string                   `xml:"domain:trnData>domain:reID"`
-	RequestingDate string                   `xml:"domain:trnData>domain:reDate"`
-	ActingID       string                   `xml:"domain:trnData>domain:acID"`
-	ActingDate     string                   `xml:"domain:trnData>domain:acDate"`
-	ExpireDate     string                   `xml:"domain:trnData>domain:exDate,omitempty"`
+	Name           string                   `xml:"trnData>name"`
+	TransferStatus DomainTransferStatusType `xml:"trnData>trStatus"`
+	RequestingID   string                   `xml:"trnData>reID"`
+	RequestingDate string                   `xml:"trnData>reDate"`
+	ActingID       string                   `xml:"trnData>acID"`
+	ActingDate     string                   `xml:"trnData>acDate"`
+	ExpireDate     string                   `xml:"trnData>exDate,omitempty"`
 }
 
 // DomainPendingActivationNotificationName represents the domain name tag in a
@@ -196,8 +196,8 @@ type DomainPendingActivationNotificationName struct {
 
 // CheckDomain ...
 type CheckDomain struct {
-	Name   CheckDomainName `xml:"domain:name"`
-	Reason string          `xml:"domain:reason,omitempty"`
+	Name   CheckDomainName `xml:"name"`
+	Reason string          `xml:"reason,omitempty"`
 }
 
 // CheckDomainName ...
