@@ -1,9 +1,28 @@
 package types
 
+import "time"
+
 // Response represents an EPP response.
 type Response struct {
-	Result        []Result `xml:"response>result"`
-	TransactionID string   `xml:"response>trID"`
+	Result        []Result      `xml:"response>result"`
+	MessageQ      MessageQueue  `xml:"response>msgQ"`
+	ResultData    interface{}   `xml:"response>resData"`
+	Extension     interface{}   `xml:"response>extension"`
+	TransactionID TransactionID `xml:"response>trID"`
+}
+
+// TransactionID represents transaction IDs for the client and the server.
+type TransactionID struct {
+	ClientTransactionID string `xml:"clTRID"`
+	ServerTransactionID string `xml:"svTRID"`
+}
+
+// MessageQueue represents a message queue for client retrieval.
+type MessageQueue struct {
+	QueueDate time.Time `xml:"qDate"`
+	Message   string    `xml:"msg"`
+	Count     int       `xml:"count,attr"`
+	ID        string    `xml:"id,attr"`
 }
 
 // Result represents the result in a EPP response.

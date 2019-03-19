@@ -1,34 +1,121 @@
 package types
 
+import "time"
+
+// DomainStatusType represents available status values.
+type DomainStatusType string
+
+// Constants representing the string value of status value types.
+const (
+	DomainStatusClientDeleteProhibited   DomainStatusType = "clientDeleteProhibited"
+	DomainStatusClientHold               DomainStatusType = "clientHold"
+	DomainStatusClientRenewProhibited    DomainStatusType = "clientRenewProhibited"
+	DomainStatusClientTransferProhibited DomainStatusType = "clientTransferProhibited"
+	DomainStatusClientUpdateProhibited   DomainStatusType = "clientUpdateProhibited"
+	DomainStatusInactive                 DomainStatusType = "inactive"
+	DomainStatusOk                       DomainStatusType = "ok"
+	DomainStatusPendingCreate            DomainStatusType = "pendingCreate"
+	DomainStatusPendingDelete            DomainStatusType = "pendingDelete"
+	DomainStatusPendingRenew             DomainStatusType = "pendingRenew"
+	DomainStatusPendingTransfer          DomainStatusType = "pendingTransfer"
+	DomainStatusPendingUpdate            DomainStatusType = "pendingUpdate"
+	DomainStatusServerDeleteProhibited   DomainStatusType = "serverDeleteProhibited"
+	DomainStatusServerHold               DomainStatusType = "serverHold"
+	DomainStatusServerRenewProhibited    DomainStatusType = "serverRenewProhibited"
+	DomainStatusServerTransferProhibited DomainStatusType = "serverTransferProhibited"
+	DomainStatusServerUpdateProhibited   DomainStatusType = "serverUpdateProhibited"
+)
+
+// DomainHostsType represents the string value of host types.
+type DomainHostsType string
+
+// Constants representing the string value of host value types.
+const (
+	DomainHostsAll  DomainHostsType = "all"
+	DomainHostsDel  DomainHostsType = "del"
+	DomainHostsNone DomainHostsType = "none"
+	DomainHostsSub  DomainHostsType = "sub"
+)
+
+// DomainTransferStatusType represents available transaction statuses.
+type DomainTransferStatusType string
+
+// Constants representing the string value of transaction status types.
+const (
+	DomainTransferClientApproved  DomainTransferStatusType = "clientApproved"
+	DomainTransferClientCancelled DomainTransferStatusType = "clientCancelled"
+	DomainTransferClientRejected  DomainTransferStatusType = "clientRejected"
+	DomainTransferPending         DomainTransferStatusType = "pending"
+	DomainTransferServerApproved  DomainTransferStatusType = "serverApproved"
+	DomainTransferServerCancelled DomainTransferStatusType = "serverCancelled"
+)
+
 // DomainCheck represents a check for domain(s).
 type DomainCheck struct {
-	Names []string `xml:"command>check>check>name,omitempty"`
+	Names []string `xml:"command>check>check>name"`
 }
 
 // DomainCreate represents a domain create command.
 type DomainCreate struct {
-	Name        string       `xml:"command>create>create>name,omitempty"`
-	Period      Period       `xml:"command>create>create>period,omitempty"`
-	NameServers []NameServer `xml:"command>create>create>ns,omitempty"`
-	Registrant  string       `xml:"command>create>create>registrant,omitempty"`
-	Contacts    []Contact    `xml:"command>create>create>contact,omitempty"`
-	AuthInfo    AuthInfo     `xml:"command>create>create>authInfo,omitempty"`
+	Name       string     `xml:"command>create>create>name"`
+	Period     Period     `xml:"command>create>create>period,omitempty"`
+	NameServer NameServer `xml:"command>create>create>ns,omitempty"`
+	Registrant string     `xml:"command>create>create>registrant,omitempty"`
+	Contacts   []Contact  `xml:"command>create>create>contact,omitempty"`
+	AuthInfo   AuthInfo   `xml:"command>create>create>authInfo,omitempty"`
 }
 
 // DomainDelete represents a domain delete command.
-type DomainDelete struct{}
+type DomainDelete struct {
+	Name string `xml:"command>delete>delete>name"`
+}
 
 // DomainInfo represents a domain info command.
-type DomainInfo struct{}
+type DomainInfo struct {
+	Name     DomainInfoName `xml:"command>info>info>name"`
+	AuthInfo AuthInfo       `xml:"command>create>create>authInfo,omitempty"`
+}
+
+// DomainInfoName represents a domain name in a domain info response.
+type DomainInfoName struct {
+	Name  string          `xml:",chardata"`
+	Hosts DomainHostsType `xml:"hosts,attr"`
+}
 
 // DomainRenew represents a domain renew command.
-type DomainRenew struct{}
+type DomainRenew struct {
+	Name       string    `xml:"command>renew>renew>name"`
+	ExpireDate time.Time `xml:"command>renew>renew>curExpDate"`
+	Period     Period    `xml:"command>renew>renew>period,omitempty"`
+}
 
 // DomainTransfer represents a domain transfer command.
-type DomainTransfer struct{}
+type DomainTransfer struct {
+	Name     string   `xml:"command>transfer>transfer>name"`
+	Period   Period   `xml:"command>transfer>transfer>period,omitempty"`
+	Authinfo AuthInfo `xml:"command>transfer>transfer>authInfo,omitempty"`
+}
 
 // DomainUpdate represents a domain update command.
-type DomainUpdate struct{}
+type DomainUpdate struct {
+	Name   string           `xml:"command>update>update>name"`
+	Add    *DomainAddRemove `xml:"command>update>update>add,omitempty"`
+	Remove *DomainAddRemove `xml:"command>update>update>rem,omitempty"`
+	Change *DomainChange    `xml:"command>update>update>chg,omitempty"`
+}
+
+// DomainAddRemove ...
+type DomainAddRemove struct {
+	NameServer NameServer     `xml:"ns,omitempty"`
+	Contact    []Contact      `xml:"contact,omitempty"`
+	Status     []DomainStatus `xml:"status,omitempty"`
+}
+
+// DomainChange ...
+type DomainChange struct {
+	Registrant string   `xml:"registrant,omitempty"`
+	AuthInfo   AuthInfo `xml:"authInfo,omitempty"`
+}
 
 // Period represents the period unit and value.
 type Period struct {
@@ -38,14 +125,14 @@ type Period struct {
 
 // NameServer represents a name server for a domain.
 type NameServer struct {
-	HostObject    string        `xml:"hostObj,omitempty"`
-	HostAttribute HostAttribute `xml:"hostAttr,omitempty"`
+	HostObject    []string        `xml:"hostObj,omitempty"`
+	HostAttribute []HostAttribute `xml:"hostAttr,omitempty"`
 }
 
 // HostAttribute represents attributes for a host for a domain.
 type HostAttribute struct {
-	HostName    string `xml:"hostName"`
-	HostAddress string `xml:"hostAddr"`
+	HostName    string        `xml:"hostName"`
+	HostAddress []HostAddress `xml:"hostAddr"`
 }
 
 // Contact represents a contact for a domain.
@@ -58,4 +145,67 @@ type Contact struct {
 type AuthInfo struct {
 	Password  string `xml:"pw,omitempty"`
 	Extension string `xml:"ext,omitempty"`
+}
+
+// DomainCheckData represents the response data for a domain check command.
+type DomainCheckData struct {
+	CheckDomain []CheckType `xml:"chkData>cd"`
+}
+
+// DomainCreateData represents the response data for a domain create command.
+type DomainCreateData struct {
+	Name       string    `xml:"creData>name"`
+	CreateDate time.Time `xml:"creData>crDate"`
+	ExpireDate time.Time `xml:"creData>exDate"`
+}
+
+// DomainInfoData represents the response data for a domain info command.
+type DomainInfoData struct {
+	Name         string         `xml:"infData>name"`
+	ROID         string         `xml:"infData>roid"`
+	Status       []DomainStatus `xml:"infData>status,omitempty"`
+	Registrant   string         `xml:"infData>registrant,omitempty"`
+	Contact      []Contact      `xml:"infData>contact,omitempty"`
+	NameServer   NameServer     `xml:"infData>ns"`
+	Host         []string       `xml:"infData>host,omitempty"`
+	ClientID     string         `xml:"infData>clID"`
+	CreateID     string         `xml:"infData>crID,omitempty"`
+	CreateDate   time.Time      `xml:"infData>crDate,omitempty"`
+	UpdateID     time.Time      `xml:"infData>upID,omitempty"`
+	UpdateDate   time.Time      `xml:"infData>upDate,omitempty"`
+	ExpireDate   time.Time      `xml:"infData>exDate,omitempty"`
+	TransferDate time.Time      `xml:"infData>trDate,omitempty"`
+	AuthInfo     AuthInfo       `xml:"infData>authInfo,omitempty"`
+}
+
+// DomainPendingActivationNotificationData represents the response data for a
+// domain pan command.
+type DomainPendingActivationNotificationData struct {
+	Name          PendingActivationNotificationName `xml:"panData>name"`
+	TransactionID string                            `xml:"panData>paTRID"`
+	Date          time.Time                         `xml:"panData>paDate"`
+}
+
+// DomainRenewData represents the response data for a domain renew command.
+type DomainRenewData struct {
+	Name       string    `xml:"renData>name"`
+	ExpireDate time.Time `xml:"renData>exDate"`
+}
+
+// DomainTransferData represents the response data for a domain transfer command.
+type DomainTransferData struct {
+	Name           string                   `xml:"trnData>name"`
+	TransferStatus DomainTransferStatusType `xml:"trnData>trStatus"`
+	RequestingID   string                   `xml:"trnData>reID"`
+	RequestingDate string                   `xml:"trnData>reDate"`
+	ActingID       string                   `xml:"trnData>acID"`
+	ActingDate     string                   `xml:"trnData>acDate"`
+	ExpireDate     string                   `xml:"trnData>exDate,omitempty"`
+}
+
+// DomainStatus represents statuses for a domain.
+type DomainStatus struct {
+	Status           string           `xml:",chardata"`
+	DomainStatusType DomainStatusType `xml:"s,attr"`
+	Language         string           `xml:"lang,attr"`
 }
