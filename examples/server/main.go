@@ -72,7 +72,7 @@ func greeting(s *epp.Session) ([]byte, error) {
 		},
 	}
 
-	return epp.Encode(greeting, epp.ServerXMLAttributes())
+	return epp.Encode(greeting, epp.ServerXMLAttributes(), "")
 }
 
 func login(s *epp.Session, data []byte) ([]byte, error) {
@@ -84,11 +84,12 @@ func login(s *epp.Session, data []byte) ([]byte, error) {
 	// Authenticate the user found in login type.
 
 	return epp.Encode(
-		epp.CreateResponse(
+		epp.CreateErrorResponse(
 			epp.EppOk,
 			fmt.Sprintf("user '%s' signed in with password '%s'", login.ClientID, login.Password),
 		),
 		epp.ServerXMLAttributes(),
+		"",
 	)
 }
 
@@ -101,8 +102,9 @@ func createDomain(s *epp.Session, data []byte) ([]byte, error) {
 	// Do stuff with dc which holds all (validated) domain create data.
 
 	return epp.Encode(
-		epp.CreateResponse(epp.EppUnimplementedCommand, "not yet implemented"),
+		epp.CreateErrorResponse(epp.EppUnimplementedCommand, "not yet implemented"),
 		epp.ServerXMLAttributes(),
+		"",
 	)
 }
 

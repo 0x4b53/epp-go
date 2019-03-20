@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"aqwari.net/xml/xmltree"
+	"github.com/bombsimon/epp-go/types"
 	"github.com/pkg/errors"
 )
 
@@ -29,9 +30,9 @@ type Mux struct {
 func NewMux() *Mux {
 	m := &Mux{
 		namespaceAliases: map[string]string{
-			"urn:ietf:params:xml:ns:domain-1.0":  "domain",
-			"urn:ietf:params:xml:ns:host-1.0":    "host",
-			"urn:ietf:params:xml:ns:contact-1.0": "contact",
+			types.NameSpaceDomain:  "domain",
+			types.NameSpaceHost:    "host",
+			types.NameSpaceContact: "contact",
 		},
 		handlers: make(map[string]HandlerFunc),
 	}

@@ -10,6 +10,30 @@ The package may or may not add interfaces which could then be used to implement
 verification methods.
 */
 
+// Name space constants for the default name spaces
+const (
+	NameSpaceContact  = "urn:ietf:params:xml:ns:contact-1.0"
+	NameSpaceDNSSEC10 = "urn:ietf:params:xml:ns:secDNS-1.0"
+	NameSpaceDNSSEC11 = "urn:ietf:params:xml:ns:secDNS-1.1"
+	NameSpaceDomain   = "urn:ietf:params:xml:ns:domain-1.0"
+	NameSpaceEPP10    = "urn:ietf:params:xml:ns:epp-1.0"
+	NameSpaceHost     = "urn:ietf:params:xml:ns:host-1.0"
+)
+
+// AliasToNameSpace space will return the full name sapce for a name space alias.
+func AliasToNameSpace(alias string) string {
+	switch alias {
+	case "contact":
+		return NameSpaceContact
+	case "domain":
+		return NameSpaceDomain
+	case "host":
+		return NameSpaceHost
+	}
+
+	return ""
+}
+
 // CheckType represents the data from any kind of check command.
 type CheckType struct {
 	Name   CheckName `xml:"name"`
