@@ -1,22 +1,29 @@
 package epp
 
 import (
-	"bytes"
 	"encoding/binary"
 	"encoding/xml"
 	"errors"
+	"fmt"
 	"io"
 	"math"
 	"net"
 	"time"
 
+	"aqwari.net/xml/xmltree"
 	"github.com/bombsimon/epp-go/types"
+)
+
+const (
+	rootLocalName          = "epp"
+	nsCommandTagStartDepth = 3
 )
 
 // ReadMessage reads one full message from r.
 func ReadMessage(conn net.Conn) ([]byte, error) {
 	// https://tools.ietf.org/html/rfc5734#section-4
-	var totalSize uint32 = 0
+	var totalSize uint32
+
 	err := binary.Read(conn, binary.BigEndian, &totalSize)
 	if err != nil {
 		return nil, err
@@ -107,50 +114,95 @@ func ClientXMLAttributes() []xml.Attr {
 				Space: "",
 				Local: "xmlns",
 			},
-			Value: "urn:ietf:params:xml:ns:epp-1.0",
+			Value: types.NameSpaceEPP10,
 		},
 	}
 }
 
 // Encode will take a type that can be marshalled to XML, add the EPP staring
 // tag for all registered namespaces and return the XML as a byte slice.
-func Encode(data interface{}, xmlAttributes []xml.Attr) ([]byte, error) {
-	// Create a buffer, write the default XML header and encode the data with
-	// an indent of 2 spaces and preserved newlines.
-	buf := bytes.Buffer{}
-	buf.WriteString(xml.Header)
-
-	enc := xml.NewEncoder(&buf)
-	enc.Indent("", "  ")
-
-	err := enc.EncodeElement(data, xml.StartElement{
-		Name: xml.Name{
-			Space: "",
-			Local: "epp",
-		},
-		Attr: xmlAttributes,
-	})
-
+func Encode(data interface{}, xmlAttributes []xml.Attr, ns string) ([]byte, error) {
+	// Marshal input data to XML, assume types implement required marshaling
+	// tags and features.
+	b, err := xml.Marshal(data)
 	if err != nil {
 		return nil, err
 	}
 
-	return buf.Bytes(), nil
+	document, err := xmltree.Parse(b)
+	if err != nil {
+		return nil, err
+	}
+
+	// Check if a name space was passed and if so add the alias to all child
+	// tags.
+	addNameSpace(document, ns)
+
+	// Replace the document root element with a proper EPP tag.
+	document.StartElement = xml.StartElement{
+		Name: xml.Name{
+			Space: "",
+			Local: rootLocalName,
+		},
+		Attr: xmlAttributes,
+	}
+
+	// Marshal the xmltree after fixing name spaces and attributes.
+	xmlBytes := xmltree.MarshalIndent(document, "", "  ")
+
+	// Add XML header to the marshalled document.
+	xmlBytes = append([]byte(xml.Header), xmlBytes...)
+
+	return xmlBytes, nil
 }
 
-// CreateResponse will create a response with a given code, message and value
-// which may be marshalled to XML and pass to WriteMessage to write a proper EPP
-// response to the socket.
-func CreateResponse(code ResultCode, reason string) types.Response {
-	return types.Response{
-		Result: []types.Result{
-			{
-				Code:    code.Code(),
-				Message: code.Message(),
-				ExternalValue: types.ExternalErrorValue{
-					Reason: reason,
-				},
-			},
-		},
+// addNameSpace will check if a name space was passed and find the first tag
+// where it should be applied.
+// TODO: This should work on any depth and tag, including extensions. I guess
+// we must support multiple name spaces and aliases as well.
+func addNameSpace(document *xmltree.Element, alias string) {
+	if alias == "" {
+		return
+	}
+
+	childElement := document
+
+	// For default commands we shuld find the first element where we want to
+	// apply the name space alias. If we run out of children before the n:th tag
+	// is found we do nothing.
+	for range make([]int, nsCommandTagStartDepth) {
+		if len(childElement.Children) != 1 {
+			return
+		}
+
+		childElement = &childElement.Children[0]
+	}
+
+	xmlns := fmt.Sprintf("xmlns:%s", alias)
+	xmlnsValue := types.AliasToNameSpace(alias)
+
+	// Add the attribute xmlns with the appropreate value based on name space.
+	// TODO: Now we just support domain, contact and host.
+	childElement.SetAttr("", xmlns, xmlnsValue)
+
+	// Rename the local tag with the alias prefix, i.e. 'create' >
+	// 'domain:create'.
+	// TODO: Why can we not set element.Name.Space?
+	childElement.Name.Local = fmt.Sprintf("%s:%s", alias, childElement.Name.Local)
+
+	// Add the name space to each tag recursively.
+	addNameSpaceToChildren(childElement.Children, alias)
+}
+
+// addNameSpaceToChildren is a recursive function which will add the alias
+// prefix to all children passed to the function.
+func addNameSpaceToChildren(children []xmltree.Element, alias string) {
+	for i, element := range children {
+		element.Name.Local = fmt.Sprintf("%s:%s", alias, element.Name.Local)
+		children[i] = element
+
+		if len(element.Children) > 0 {
+			addNameSpaceToChildren(element.Children, alias)
+		}
 	}
 }

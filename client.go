@@ -75,7 +75,7 @@ func (c *Client) Login(username, password string) ([]byte, error) {
 		},
 	}
 
-	encoded, err := Encode(login, ClientXMLAttributes())
+	encoded, err := Encode(login, ClientXMLAttributes(), "")
 	if err != nil {
 		return nil, err
 	}

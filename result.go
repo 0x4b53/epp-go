@@ -2,6 +2,8 @@ package epp
 
 import (
 	"fmt"
+
+	"github.com/bombsimon/epp-go/types"
 )
 
 // ResultCode represents a result code from the EPP server.
@@ -139,5 +141,22 @@ func (rs ResultCode) IsBye() bool {
 		return true
 	default:
 		return false
+	}
+}
+
+// CreateErrorResponse will create a response with a given code, message and value
+// which may be marshalled to XML and pass to WriteMessage to write a proper EPP
+// response to the socket.
+func CreateErrorResponse(code ResultCode, reason string) types.Response {
+	return types.Response{
+		Result: []types.Result{
+			{
+				Code:    code.Code(),
+				Message: code.Message(),
+				ExternalValue: types.ExternalErrorValue{
+					Reason: reason,
+				},
+			},
+		},
 	}
 }
