@@ -1,6 +1,12 @@
-# EPP Server
+# EPP Go - Extensible Provisioning Protocol Server and Client
 
-This is an implementation of how to handle EPP requests concurrently.
+This is an implementation of how to handle EPP requests concurrently, both as a
+client and as a server. The main focus lays implementing types that may be used
+both as a client and as a server. These types should be easy to use and support
+all the allowed ways of setting up name spaces, attributes and tags. With the
+types implemented the initial focus will be to ensure a complete server
+implementation may be created. Since this is registry specific there will
+probably only be minor helpers and wrappers.
 
 ## NOTE
 
@@ -10,16 +16,14 @@ private project and an experiment to work with XSD files and XML with Go.**
 
 ## Client
 
-A good way to test the implementation of this server is to use an existing and
-tested client to ensure communication works as epxected.
+To quickly get up and running and support testing of the server the repository
+contains a set of real world examples of EPP commands foudn in
+[xml/commands](xml/commands).
 
-Example clients:
-
-* [Domainr EPP client in Go (WIP)](https://github.com/domainr/epp)
-* [python-epp-client](https://github.com/Darkfish/python-epp-client)
-
-Even this package includes a test client which can send XML to the EPP server
-although no validation or verificate is made.
+Inside the [example](example/client) folder there's a client utilizing a few of
+the types and all of the read/writering confirming to EPP RFC. This client reads
+from STDIN so it's just to copy and paste any of the example XML file contents
+to test changes.
 
 ## References
 
@@ -56,9 +60,9 @@ XML files are linted with [`xmllint`](http://xmlsoft.org/xmllint.html).
 
 To validate XML [`libxml2` (bindings for
 Go)](https://github.com/lestrrat-go/libxml2/) is used. This package requires you
-to install the [`libxml2`](http://xmlsoft.org/downloads.html) C bindings.
+to install the [`libxml2`](http://xmlsoft.org/downloads.html) C libraries.
 
-## Installation macOS
+### Installation macOS
 
 Since macOS 10.14 [brew](https://brew.sh/) won't link packages and libraries
 bundlede with maCOS. This includes `libxml2` and it's header files.
