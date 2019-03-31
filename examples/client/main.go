@@ -32,6 +32,8 @@ func main() {
 
 	fmt.Println(string(greeting))
 
+	fmt.Println("---- Enter EPP frame terminated by a double newline ----")
+
 	fmt.Println("> Automatic login!")
 	time.Sleep(1 * time.Second)
 
@@ -42,6 +44,8 @@ func main() {
 	}
 
 	fmt.Println(string(response))
+
+	fmt.Println("---- Enter EPP frame terminated by a double newline ----")
 
 	for {
 		scnr := bufio.NewScanner(os.Stdin)
@@ -55,6 +59,7 @@ func main() {
 
 		scnr.Scan()
 		data := scnr.Bytes()
+
 		if scnr.Err() != nil {
 			log.Fatal(scnr.Err().Error())
 		}

@@ -5,9 +5,9 @@ import "time"
 // Response represents an EPP response.
 type Response struct {
 	Result        []Result      `xml:"response>result"`
-	MessageQ      MessageQueue  `xml:"response>msgQ"`
-	ResultData    interface{}   `xml:"response>resData"`
-	Extension     interface{}   `xml:"response>extension"`
+	MessageQ      *MessageQueue `xml:"response>msgQ,omitempty"`
+	ResultData    interface{}   `xml:"response>resData,omitempty"`
+	Extension     interface{}   `xml:"response>extension,omitempty"`
 	TransactionID TransactionID `xml:"response>trID"`
 }
 
@@ -19,18 +19,18 @@ type TransactionID struct {
 
 // MessageQueue represents a message queue for client retrieval.
 type MessageQueue struct {
-	QueueDate time.Time `xml:"qDate"`
-	Message   string    `xml:"msg"`
-	Count     int       `xml:"count,attr"`
-	ID        string    `xml:"id,attr"`
+	QueueDate *time.Time `xml:"qDate,omitempty"`
+	Message   string     `xml:"msg,omitempty"`
+	Count     int        `xml:"count,attr"`
+	ID        string     `xml:"id,attr"`
 }
 
 // Result represents the result in a EPP response.
 type Result struct {
-	Code          int                `xml:"code,attr"`
-	Message       string             `xml:"msg"`
-	Value         interface{}        `xml:"value"`
-	ExternalValue ExternalErrorValue `xml:"extValue"`
+	Code          int                 `xml:"code,attr"`
+	Message       string              `xml:"msg"`
+	Value         interface{}         `xml:"value"`
+	ExternalValue *ExternalErrorValue `xml:"extValue,omitempty"`
 }
 
 // ExternalErrorValue represents the response in the extValeu tag.

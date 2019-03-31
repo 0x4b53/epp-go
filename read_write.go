@@ -15,8 +15,7 @@ import (
 )
 
 const (
-	rootLocalName          = "epp"
-	nsCommandTagStartDepth = 3
+	rootLocalName = "epp"
 )
 
 // ReadMessage reads one full message from r.
@@ -121,7 +120,7 @@ func ClientXMLAttributes() []xml.Attr {
 
 // Encode will take a type that can be marshalled to XML, add the EPP staring
 // tag for all registered namespaces and return the XML as a byte slice.
-func Encode(data interface{}, xmlAttributes []xml.Attr, ns string) ([]byte, error) {
+func Encode(data interface{}, xmlAttributes []xml.Attr) ([]byte, error) {
 	// Marshal input data to XML, assume types implement required marshaling
 	// tags and features.
 	b, err := xml.Marshal(data)
@@ -134,9 +133,7 @@ func Encode(data interface{}, xmlAttributes []xml.Attr, ns string) ([]byte, erro
 		return nil, err
 	}
 
-	// Check if a name space was passed and if so add the alias to all child
-	// tags.
-	addNameSpace(document, ns)
+	addNameSpaceAlias(document, false)
 
 	// Replace the document root element with a proper EPP tag.
 	document.StartElement = xml.StartElement{
@@ -156,53 +153,40 @@ func Encode(data interface{}, xmlAttributes []xml.Attr, ns string) ([]byte, erro
 	return xmlBytes, nil
 }
 
-// addNameSpace will check if a name space was passed and find the first tag
-// where it should be applied.
-// TODO: This should work on any depth and tag, including extensions. I guess
-// we must support multiple name spaces and aliases as well.
-func addNameSpace(document *xmltree.Element, alias string) {
-	if alias == "" {
-		return
+// addNameSpaceAlias will check each node/element in the XML tree and if the
+// node has an xml.Name.Space value set an alias will be created and then added
+// to all child nodes. The alias will only be setup for the root element.
+func addNameSpaceAlias(document *xmltree.Element, nsAdded bool) *xmltree.Element {
+	namespaceAliases := map[string]string{
+		types.NameSpaceDomain:   "domain",
+		types.NameSpaceHost:     "host",
+		types.NameSpaceContact:  "contact",
+		types.NameSpaceDNSSEC10: "sed",
+		types.NameSpaceDNSSEC11: "sec",
+		types.NameSpaceIIS12:    "iis",
 	}
 
-	childElement := document
-
-	// For default commands we shuld find the first element where we want to
-	// apply the name space alias. If we run out of children before the n:th tag
-	// is found we do nothing.
-	for range make([]int, nsCommandTagStartDepth) {
-		if len(childElement.Children) != 1 {
-			return
+	if document.Name.Space != "" {
+		alias, ok := namespaceAliases[document.Name.Space]
+		if !ok {
+			return nil
 		}
 
-		childElement = &childElement.Children[0]
-	}
+		if !nsAdded {
+			xmlns := fmt.Sprintf("xmlns:%s", alias)
+			document.SetAttr("", xmlns, document.Name.Space)
 
-	xmlns := fmt.Sprintf("xmlns:%s", alias)
-	xmlnsValue := types.AliasToNameSpace(alias)
-
-	// Add the attribute xmlns with the appropreate value based on name space.
-	// TODO: Now we just support domain, contact and host.
-	childElement.SetAttr("", xmlns, xmlnsValue)
-
-	// Rename the local tag with the alias prefix, i.e. 'create' >
-	// 'domain:create'.
-	// TODO: Why can we not set element.Name.Space?
-	childElement.Name.Local = fmt.Sprintf("%s:%s", alias, childElement.Name.Local)
-
-	// Add the name space to each tag recursively.
-	addNameSpaceToChildren(childElement.Children, alias)
-}
-
-// addNameSpaceToChildren is a recursive function which will add the alias
-// prefix to all children passed to the function.
-func addNameSpaceToChildren(children []xmltree.Element, alias string) {
-	for i, element := range children {
-		element.Name.Local = fmt.Sprintf("%s:%s", alias, element.Name.Local)
-		children[i] = element
-
-		if len(element.Children) > 0 {
-			addNameSpaceToChildren(element.Children, alias)
+			// Namespace alias is now added so flip to true to skip child
+			// elements.
+			nsAdded = true
 		}
+
+		document.Name.Local = fmt.Sprintf("%s:%s", alias, document.Name.Local)
 	}
+
+	for i, child := range document.Children {
+		document.Children[i] = *addNameSpaceAlias(&child, nsAdded)
+	}
+
+	return document
 }

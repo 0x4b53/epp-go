@@ -153,7 +153,7 @@ func CreateErrorResponse(code ResultCode, reason string) types.Response {
 			{
 				Code:    code.Code(),
 				Message: code.Message(),
-				ExternalValue: types.ExternalErrorValue{
+				ExternalValue: &types.ExternalErrorValue{
 					Reason: reason,
 				},
 			},

@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<epp xmlns:ns0="urn:se:iis:xml:epp:iis-1.2" xmlns="urn:ietf:params:xml:ns:epp-1.0">
+<epp xmlns="urn:ietf:params:xml:ns:epp-1.0">
   <command>
     <create>
       <contact:create xmlns:contact="urn:ietf:params:xml:ns:contact-1.0">
@@ -14,12 +14,15 @@
         </contact:postalInfo>
         <contact:voice>+41.12345689</contact:voice>
         <contact:email>jane@example.se</contact:email>
+        <contact:authInfo>
+          <contact:pw>some-password</contact:pw>
+        </contact:authInfo>
       </contact:create>
     </create>
     <extension>
-      <ns0:create>
-        <ns0:orgno>[SE]555555-1111</ns0:orgno>
-      </ns0:create>
+      <iis:create xmlns:iis="urn:se:iis:xml:epp:iis-1.2">
+        <iis:orgno>[SE]555555-1111</iis:orgno>
+      </iis:create>
     </extension>
     <clTRID>ABC-12345</clTRID>
   </command>
