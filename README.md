@@ -57,3 +57,15 @@ XML files are linted with [`xmllint`](http://xmlsoft.org/xmllint.html).
 To validate XML [`libxml2` (bindings for
 Go)](https://github.com/lestrrat-go/libxml2/) is used. This package requires you
 to install the [`libxml2`](http://xmlsoft.org/downloads.html) C bindings.
+
+## Installation macOS
+
+Since macOS 10.14 [brew](https://brew.sh/) won't link packages and libraries
+bundlede with maCOS. This includes `libxml2` and it's header files.
+
+```sh
+$ brew install libxml2
+
+$ PKG_CONFIG_PATH="/usr/local/opt/libxml2/lib/pkgconfig" \
+    go get github.com/lestrrat-go/libxml2/...
+```

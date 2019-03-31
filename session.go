@@ -9,7 +9,10 @@ import (
 	xsd "github.com/lestrrat-go/libxml2/xsd"
 )
 
+// HandlerFunc represents a function for an EPP message.
 type HandlerFunc func(*Session, []byte) ([]byte, error)
+
+// GreetFunc represents a function handling a greeting for the EPP server.
 type GreetFunc func(*Session) ([]byte, error)
 
 // Session is an active connection to the EPP server.
@@ -71,10 +74,16 @@ func (s *Session) run() error {
 	for {
 		select {
 		case <-s.stopChan:
+			log.Printf("stopping server, ending session %s", s.SessionID)
+
 			return nil
 		case <-sessionTimeout:
+			log.Printf("session has been active for 1 hour, ending session %s", s.SessionID)
+
 			return nil
 		case <-idleTimeout:
+			log.Printf("session has been idle for 10 minutes, ending session %s", s.SessionID)
+
 			return nil
 		default:
 			// Go on...
@@ -93,6 +102,8 @@ func (s *Session) run() error {
 
 			return err
 		}
+
+		log.Printf("handling incomming message")
 
 		if s.validator != nil {
 			if err := s.validator.Validate(message); err != nil {

@@ -15,6 +15,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/pkg/errors"
 
 	epp "github.com/bombsimon/epp-go"
@@ -37,7 +38,9 @@ func main() {
 	}
 
 	mux.AddHandler("command/login", login)
+	mux.AddHandler("command/info/domain", infoDomainWithExtension)
 	mux.AddHandler("command/create/domain", createDomain)
+	mux.AddHandler("command/create/contact", createContactWithExtension)
 
 	// Support graceful shutdown.
 	go func() {
@@ -48,6 +51,7 @@ func main() {
 	}()
 
 	log.Println("Running server...")
+
 	if err := server.ListenAndServe(); err != nil {
 		log.Fatal(err.Error())
 	}
@@ -59,6 +63,7 @@ func greeting(s *epp.Session) ([]byte, error) {
 		_ = s.Close()
 
 		fmt.Println("could not verify peer certificates")
+
 		return nil, errors.New("could not verify certificates")
 	}
 
@@ -72,11 +77,12 @@ func greeting(s *epp.Session) ([]byte, error) {
 		},
 	}
 
-	return epp.Encode(greeting, epp.ServerXMLAttributes(), "")
+	return epp.Encode(greeting, epp.ServerXMLAttributes())
 }
 
 func login(s *epp.Session, data []byte) ([]byte, error) {
 	login := types.Login{}
+
 	if err := xml.Unmarshal(data, &login); err != nil {
 		return nil, err
 	}
@@ -89,22 +95,118 @@ func login(s *epp.Session, data []byte) ([]byte, error) {
 			fmt.Sprintf("user '%s' signed in with password '%s'", login.ClientID, login.Password),
 		),
 		epp.ServerXMLAttributes(),
-		"",
+	)
+}
+
+func infoDomainWithExtension(s *epp.Session, data []byte) ([]byte, error) {
+	di := types.DomainInfo{}
+
+	if err := xml.Unmarshal(data, &di); err != nil {
+		return nil, err
+	}
+
+	// Assume the domain was found.
+
+	// Construct the response with basic data.
+	diResponse := types.DomainInfoDataType{
+		InfoData: types.DomainInfoData{
+			Name: di.Name.Name,
+			ROID: "DOMAIN_0000000000-SE",
+			Status: []types.DomainStatus{
+				{
+					DomainStatusType: types.DomainStatusOk,
+				},
+			},
+			Host: []string{
+				fmt.Sprintf("ns1.%s", di.Name.Name),
+				fmt.Sprintf("ns2.%s", di.Name.Name),
+			},
+			ClientID: "Some Client",
+			CreateID: "Some Client",
+			UpdateID: "Some Client",
+		},
+	}
+
+	// Add extension data from extension iis-1.2.
+	diIISExtensionResponse := types.IISExtensionInfoDataType{
+		InfoData: types.IISExtensionInfoData{
+			State:        "active",
+			ClientDelete: false,
+		},
+	}
+
+	// Add extension data from secDNS-1.1.
+	diDNSSECExtensionResponse := types.DNSSECExtensionInfoDataType{
+		InfoData: types.DNSSECOrKeyData{
+			DNSSECData: []types.DNSSEC{
+				{
+					KeyTag:     195550,
+					Algorithm:  3,
+					DigestType: 5,
+					Digest:     "FFAB0102FFAB0102FFAB0102FFAB0102FFAB0102FFAB0102FFAB0102FFAB0102",
+				},
+			},
+		},
+	}
+
+	// Generate the response with the default result data and two extensions.
+	response := types.Response{
+		Result: []types.Result{
+			{
+				Code:    epp.EppOk.Code(),
+				Message: epp.EppOk.Message(),
+			},
+		},
+		ResultData: diResponse,
+		// Inline construct an extension type that holds both DNSSEC and IIS.
+		Extension: struct {
+			types.IISExtensionInfoDataType
+			types.DNSSECExtensionInfoDataType
+		}{
+			diIISExtensionResponse,
+			diDNSSECExtensionResponse,
+		},
+	}
+
+	return epp.Encode(
+		response,
+		epp.ServerXMLAttributes(),
 	)
 }
 
 func createDomain(s *epp.Session, data []byte) ([]byte, error) {
-	dc := types.DomainCreate{}
+	dc := struct {
+		Data types.DomainCreate `xml:"command>create>create"`
+	}{}
+
 	if err := xml.Unmarshal(data, &dc); err != nil {
 		return nil, err
 	}
 
 	// Do stuff with dc which holds all (validated) domain create data.
+	spew.Dump(dc)
 
 	return epp.Encode(
 		epp.CreateErrorResponse(epp.EppUnimplementedCommand, "not yet implemented"),
 		epp.ServerXMLAttributes(),
-		"",
+	)
+}
+
+func createContactWithExtension(s *epp.Session, data []byte) ([]byte, error) {
+	cc := struct {
+		types.ContactCreate
+		types.IISExtensionCreate
+	}{}
+
+	if err := xml.Unmarshal(data, &cc); err != nil {
+		return nil, err
+	}
+
+	// Do stuff with cc which holds all (validated) domain create data.
+
+	return epp.Encode(
+		epp.CreateErrorResponse(epp.EppUnimplementedCommand, "not yet implemented"),
+		epp.ServerXMLAttributes(),
 	)
 }
 

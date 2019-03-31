@@ -171,8 +171,7 @@ func (s *Server) Stop() {
 	log.Print("stopping listener channel")
 	close(s.stopChan)
 
-	for id, session := range s.Sessions {
-		log.Println("stopping", id)
+	for _, session := range s.Sessions {
 		err := session.Close()
 		if err != nil {
 			log.Println("error closing session:", err.Error())
