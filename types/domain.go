@@ -241,7 +241,7 @@ type DomainInfoData struct {
 	UpdateDate   *time.Time     `xml:"upDate,omitempty"`
 	ExpireDate   *time.Time     `xml:"exDate,omitempty"`
 	TransferDate *time.Time     `xml:"trDate,omitempty"`
-	AuthInfo     AuthInfo       `xml:"authInfo,omitempty"`
+	AuthInfo     *AuthInfo      `xml:"authInfo,omitempty"`
 }
 
 // DomainPendingActivationNotificationData represents the response data for a

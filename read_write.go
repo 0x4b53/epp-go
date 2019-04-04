@@ -91,14 +91,14 @@ func ServerXMLAttributes() []xml.Attr {
 		{
 			Name: xml.Name{
 				Space: "",
-				Local: "xsi",
+				Local: "xmlns:xsi",
 			},
 			Value: "http://www.w3.org/2001/XMLSchema-instance",
 		},
 		{
 			Name: xml.Name{
-				Space: "xsi",
-				Local: "schemaLocation",
+				Space: "",
+				Local: "xsi:schemaLocation",
 			},
 			Value: "urn:ietf:params:xml:ns:epp-1.0 epp-1.0.xsd",
 		},

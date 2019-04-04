@@ -63,6 +63,10 @@ func (s *Session) run() error {
 		return err
 	}
 
+	if err := s.validate(response); err != nil {
+		return err
+	}
+
 	err = WriteMessage(s.conn, response)
 	if err != nil {
 		return err
@@ -105,21 +109,17 @@ func (s *Session) run() error {
 
 		log.Printf("handling incomming message")
 
-		if s.validator != nil {
-			if err := s.validator.Validate(message); err != nil {
-				if xErr, ok := err.(xsd.SchemaValidationError); ok {
-					for _, e := range xErr.Errors() {
-						log.Printf("error: %s", e.Error())
-					}
-				}
-
-				return err
-			}
+		if err := s.validate(message); err != nil {
+			return err
 		}
 
 		// Handle Message:
 		response, err = s.handler(s, message)
 		if err != nil {
+			return err
+		}
+
+		if err := s.validate(response); err != nil {
 			return err
 		}
 
@@ -139,6 +139,24 @@ func (s *Session) Close() error {
 
 	if s.validator != nil {
 		s.validator.Schema.Free()
+	}
+
+	return nil
+}
+
+func (s *Session) validate(data []byte) error {
+	if s.validator == nil {
+		return nil
+	}
+
+	if err := s.validator.Validate(data); err != nil {
+		if xErr, ok := err.(xsd.SchemaValidationError); ok {
+			for _, e := range xErr.Errors() {
+				log.Printf("error: %s", e.Error())
+			}
+		}
+
+		return err
 	}
 
 	return nil

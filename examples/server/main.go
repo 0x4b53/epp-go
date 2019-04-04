@@ -72,7 +72,32 @@ func greeting(s *epp.Session) ([]byte, error) {
 			ServerID:   "default-server",
 			ServerDate: time.Now(),
 			ServiceMenu: types.ServiceMenu{
-				Version: []string{"1.0"},
+				Version:  []string{"1.0"},
+				Language: []string{"en"},
+				ObjectURI: []string{
+					types.NameSpaceDomain,
+					types.NameSpaceContact,
+					types.NameSpaceHost,
+				},
+			},
+			DCP: types.DCP{
+				Access: types.DCPAccess{
+					All: &types.EmptyTag{},
+				},
+				Statement: types.DCPStatement{
+					Purpose: types.DCPPurpose{
+						Prov: &types.EmptyTag{},
+					},
+					Recipient: types.DCPRecipient{
+						Ours: []types.DCPOurs{
+							{},
+						},
+						Public: &types.EmptyTag{},
+					},
+					Retention: types.DCPRetention{
+						Stated: &types.EmptyTag{},
+					},
+				},
 			},
 		},
 	}
@@ -89,17 +114,28 @@ func login(s *epp.Session, data []byte) ([]byte, error) {
 
 	// Authenticate the user found in login type.
 
+	response := types.Response{
+		Result: []types.Result{
+			{
+				Code:    epp.EppOk.Code(),
+				Message: epp.EppOk.Message(),
+			},
+		},
+		TransactionID: types.TransactionID{
+			ServerTransactionID: "ABC-123",
+		},
+	}
+
 	return epp.Encode(
-		epp.CreateErrorResponse(
-			epp.EppOk,
-			fmt.Sprintf("user '%s' signed in with password '%s'", login.ClientID, login.Password),
-		),
+		response,
 		epp.ServerXMLAttributes(),
 	)
 }
 
 func infoDomainWithExtension(s *epp.Session, data []byte) ([]byte, error) {
-	di := types.DomainInfo{}
+	di := struct {
+		Data types.DomainInfo `xml:"command>info>info"`
+	}{}
 
 	if err := xml.Unmarshal(data, &di); err != nil {
 		return nil, err
@@ -110,7 +146,7 @@ func infoDomainWithExtension(s *epp.Session, data []byte) ([]byte, error) {
 	// Construct the response with basic data.
 	diResponse := types.DomainInfoDataType{
 		InfoData: types.DomainInfoData{
-			Name: di.Name.Name,
+			Name: di.Data.Name.Name,
 			ROID: "DOMAIN_0000000000-SE",
 			Status: []types.DomainStatus{
 				{
@@ -118,8 +154,8 @@ func infoDomainWithExtension(s *epp.Session, data []byte) ([]byte, error) {
 				},
 			},
 			Host: []string{
-				fmt.Sprintf("ns1.%s", di.Name.Name),
-				fmt.Sprintf("ns2.%s", di.Name.Name),
+				fmt.Sprintf("ns1.%s", di.Data.Name.Name),
+				fmt.Sprintf("ns2.%s", di.Data.Name.Name),
 			},
 			ClientID: "Some Client",
 			CreateID: "Some Client",
@@ -140,7 +176,7 @@ func infoDomainWithExtension(s *epp.Session, data []byte) ([]byte, error) {
 		InfoData: types.DNSSECOrKeyData{
 			DNSSECData: []types.DNSSEC{
 				{
-					KeyTag:     195550,
+					KeyTag:     10,
 					Algorithm:  3,
 					DigestType: 5,
 					Digest:     "FFAB0102FFAB0102FFAB0102FFAB0102FFAB0102FFAB0102FFAB0102FFAB0102",
@@ -165,6 +201,9 @@ func infoDomainWithExtension(s *epp.Session, data []byte) ([]byte, error) {
 		}{
 			diIISExtensionResponse,
 			diDNSSECExtensionResponse,
+		},
+		TransactionID: types.TransactionID{
+			ServerTransactionID: "ABC-123",
 		},
 	}
 
