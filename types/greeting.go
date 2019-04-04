@@ -2,19 +2,6 @@ package types
 
 import "time"
 
-// DCPAccessType represents available DCP access types.
-type DCPAccessType string
-
-// Constants representing the string value of DCP access types.
-const (
-	DCPAll              DCPAccessType = "all"
-	DCPNone             DCPAccessType = "none"
-	DCPNull             DCPAccessType = "null"
-	DCPOther            DCPAccessType = "other"
-	DCPPersonal         DCPAccessType = "personal"
-	DCPPersonalAndOther DCPAccessType = "personalAndOther"
-)
-
 // EPPGreeting is the type to represent a greeting from the server.
 type EPPGreeting struct {
 	Greeting Greeting `xml:"greeting"`
@@ -31,7 +18,7 @@ type Greeting struct {
 // ServiceMenu represents tags that may occur in the greeting service tag.
 type ServiceMenu struct {
 	Version           []string           `xml:"version"`
-	Language          []string           `xml:"language"`
+	Language          []string           `xml:"lang"`
 	ObjectURI         []string           `xml:"objURI"`
 	ServiceExtentions []ServiceExtension `xml:"svcExtention"`
 }
@@ -44,51 +31,61 @@ type ServiceExtension struct {
 // DCP (data collection policy) represents the policy declared in the greeting
 // message.
 type DCP struct {
-	Access    DCPAccessType `xml:"access"`
-	Statement DCPStatement  `xml:"statement"`
-	Expiry    DCPExpiry     `xml:"expiry"`
+	Access    DCPAccess    `xml:"access"`
+	Statement DCPStatement `xml:"statement"`
+	Expiry    *DCPExpiry   `xml:"expiry,omitempty"`
+}
+
+// DCPAccess represents the access type.
+type DCPAccess struct {
+	All              *EmptyTag `xml:"all,omitempty"`
+	None             *EmptyTag `xml:"none,omitempty"`
+	Null             *EmptyTag `xml:"null,omitempty"`
+	Other            *EmptyTag `xml:"other,omitempty"`
+	Personal         *EmptyTag `xml:"personal,omitempty"`
+	PersonalAndOther *EmptyTag `xml:"personalAndOther,omitempty"`
 }
 
 // DCPExpiry represent DCP expiry.
 type DCPExpiry struct {
 	Absolute *time.Time `xml:"absoulte"`
-	Relative string     `xml:"relative"` // Format "PnYnMnDTnHnMnS"
+	Relative string     `xml:"relative,omitempty"` // Format "PnYnMnDTnHnMnS"
 }
 
 // DCPStatement represent DCP statements.
 type DCPStatement struct {
-	Purpose   []DCPPurpose   `xml:"purpose"`
-	Recipient []DCPRecipient `xml:"recipient"`
-	Retention []DCPRetention `xml:"retention"`
+	Purpose   DCPPurpose   `xml:"purpose"`
+	Recipient DCPRecipient `xml:"recipient"`
+	Retention DCPRetention `xml:"retention"`
 }
 
 // DCPPurpose represents a DCP purposes.
 type DCPPurpose struct {
-	Admin   string `xml:"admin"`
-	Contact string `xml:"contact"`
-	Other   string `xml:"other"`
-	Prov    string `xml:"prov"`
+	Admin   *EmptyTag `xml:"admin,omitempty"`
+	Contact *EmptyTag `xml:"contact,omitempty"`
+	Other   *EmptyTag `xml:"other,omitempty"`
+	Prov    *EmptyTag `xml:"prov,omitempty"`
 }
 
 // DCPRecipient represents a DCP recipient.
 type DCPRecipient struct {
-	Other     string    `xml:"other"`
+	Other     *EmptyTag `xml:"other"`
 	Ours      []DCPOurs `xml:"ours"`
-	Public    string    `xml:"public"`
-	Same      string    `xml:"same"`
-	Unrelated string    `xml:"unrelated"`
+	Public    *EmptyTag `xml:"public"`
+	Same      *EmptyTag `xml:"same"`
+	Unrelated *EmptyTag `xml:"unrelated"`
 }
 
 // DCPOurs represents the description for DCP ours.
 type DCPOurs struct {
-	RecipientDescription string `xml:"recDesc"`
+	RecipientDescription string `xml:"recDesc,omitempty"`
 }
 
 // DCPRetention represents a DCP retention.
 type DCPRetention struct {
-	Business   string `xml:"business"`
-	Indefinite string `xml:"indefinite"`
-	Legal      string `xml:"legal"`
-	None       string `xml:"none"`
-	Stated     string `xml:"stated"`
+	Business   *EmptyTag `xml:"business"`
+	Indefinite *EmptyTag `xml:"indefinite"`
+	Legal      *EmptyTag `xml:"legal"`
+	None       *EmptyTag `xml:"none"`
+	Stated     *EmptyTag `xml:"stated"`
 }

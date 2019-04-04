@@ -32,6 +32,11 @@ func AliasToNameSpace(alias string) string {
 	return ""
 }
 
+// EmptyTag represents a tag that can not have any value. This is used for
+// instances to know where a tag was set or not by assigning the parent tag to a
+// pointer to this type.
+type EmptyTag struct{}
+
 // CheckType represents the data from any kind of check command.
 type CheckType struct {
 	Name   CheckName `xml:"name"`

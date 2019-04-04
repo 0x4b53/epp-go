@@ -13,7 +13,7 @@ type Response struct {
 
 // TransactionID represents transaction IDs for the client and the server.
 type TransactionID struct {
-	ClientTransactionID string `xml:"clTRID"`
+	ClientTransactionID string `xml:"clTRID,omitempty"`
 	ServerTransactionID string `xml:"svTRID"`
 }
 
