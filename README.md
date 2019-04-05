@@ -14,6 +14,90 @@ probably only be minor helpers and wrappers.
 created to allow collaborations and inspire other people. This probject is a
 private project and an experiment to work with XSD files and XML with Go.**
 
+## Types
+
+A big motivation behind this project is to define all the available EPP types
+and even some extensions. This is so that even if you don't use this server och
+client you should be able to use the types to marshal or unmarshal your XML to
+your desired system.
+
+There are a lot of knowns problems with this, especially since EPP is so heavily
+dependent on namespaces. [This issue](https://github.com/golang/go/issues/13400)
+in the `golang/go` project summarize the most common issues with namespaces,
+aliases and attributes.
+
+The way this is handled in this project is to first define all types as an outer
+tag for each part with the RFC namespace defined. The code then uses
+[`go-libxml`](https://github.com/alexrsagen/go-libxml) to figure out where the
+namespaces should be, adds an alias and `xmlns` tag and then uses the aliases on
+all the child elements.
+
+Sadly, this does not solve the issue that the XML should be able to be
+unmarshalled to the defined types despite the namespace or alias. To handle this
+a codegen binary is bundled in this project which can generate a copy of all
+types without the namespace.
+
+Example usage and installment.
+
+```sh
+$ go install ./cmd/type-generator/...
+$ type-generator
+Generated file: contact_auto_generated.go
+Generated file: domain_auto_generated.go
+Generated file: host_auto_generated.go
+...
+```
+
+To generate XML to be used for a client, use the specified type for this.
+
+```go
+domainInfo := types.DomainInfoType{
+    Info: types.DomainInfo{
+        Name: types.DomainInfoName{
+            Name: "example.se",
+        },
+    },
+}
+
+bytes, err := Encode(
+    domainInfo,
+    ClientXMLAttributes(),
+)
+
+if err != nil {
+    panic(err)
+}
+```
+
+The above code will generate the following XML.
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<epp xmlns="urn:ietf:params:xml:ns:epp-1.0">
+  <command>
+    <info>
+      <domain:info xmlns:domain="urn:ietf:params:xml:ns:domain-1.0" xmlns="urn:ietf:params:xml:ns:domain-1.0">
+        <domain:name hosts="">example.se</domain:name>
+        <domain:authInfo />
+      </domain:info>
+    </info>
+  </command>
+</epp>
+```
+
+To unmarshal already created XML no matter the namespace or alias, use the auto
+genrated types. The XML listed above could be unmarshaled like this.
+
+```go
+domainInfoRequest := DomainInfoTypeIn{}
+
+if err := xml.Unmarshal(inData, &domainInfoRequest); err != nil {
+    panic(err)
+}
+
+fmt.Println(domainInfoRequest.Info.Name.Name) // Prints `example.se`
+```
+
 ## Client
 
 To quickly get up and running and support testing of the server the repository
@@ -65,7 +149,7 @@ to install the [`libxml2`](http://xmlsoft.org/downloads.html) C libraries.
 ### Installation macOS
 
 Since macOS 10.14 [brew](https://brew.sh/) won't link packages and libraries
-bundlede with maCOS. This includes `libxml2` and it's header files.
+bundlede with macOS. This includes `libxml2` and it's header files.
 
 ```sh
 $ brew install libxml2

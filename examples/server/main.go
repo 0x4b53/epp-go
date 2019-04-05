@@ -133,9 +133,7 @@ func login(s *epp.Session, data []byte) ([]byte, error) {
 }
 
 func infoDomainWithExtension(s *epp.Session, data []byte) ([]byte, error) {
-	di := struct {
-		Data types.DomainInfo `xml:"command>info>info"`
-	}{}
+	di := types.DomainInfoTypeIn{}
 
 	if err := xml.Unmarshal(data, &di); err != nil {
 		return nil, err
@@ -146,7 +144,7 @@ func infoDomainWithExtension(s *epp.Session, data []byte) ([]byte, error) {
 	// Construct the response with basic data.
 	diResponse := types.DomainInfoDataType{
 		InfoData: types.DomainInfoData{
-			Name: di.Data.Name.Name,
+			Name: di.Info.Name.Name,
 			ROID: "DOMAIN_0000000000-SE",
 			Status: []types.DomainStatus{
 				{
@@ -154,8 +152,8 @@ func infoDomainWithExtension(s *epp.Session, data []byte) ([]byte, error) {
 				},
 			},
 			Host: []string{
-				fmt.Sprintf("ns1.%s", di.Data.Name.Name),
-				fmt.Sprintf("ns2.%s", di.Data.Name.Name),
+				fmt.Sprintf("ns1.%s", di.Info.Name.Name),
+				fmt.Sprintf("ns2.%s", di.Info.Name.Name),
 			},
 			ClientID: "Some Client",
 			CreateID: "Some Client",
