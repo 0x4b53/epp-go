@@ -106,6 +106,26 @@ func greeting(s *epp.Session) ([]byte, error) {
 }
 
 func login(s *epp.Session, data []byte) ([]byte, error) {
+	domainInfo := types.DomainInfoType{
+		Info: types.DomainInfo{
+			Name: types.DomainInfoName{
+				Name:  "example.se",
+				Hosts: types.DomainHostsAll,
+			},
+		},
+	}
+
+	bytes, err := epp.Encode(
+		domainInfo,
+		epp.ClientXMLAttributes(),
+	)
+
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(string(bytes))
+
 	login := types.Login{}
 
 	if err := xml.Unmarshal(data, &login); err != nil {

@@ -17,7 +17,7 @@ private project and an experiment to work with XSD files and XML with Go.**
 ## Types
 
 A big motivation behind this project is to define all the available EPP types
-and even some extensions. This is so that even if you don't use this server och
+and even some extensions. This is so that even if you don't use this server or
 client you should be able to use the types to marshal or unmarshal your XML to
 your desired system.
 
@@ -54,7 +54,8 @@ To generate XML to be used for a client, use the specified type for this.
 domainInfo := types.DomainInfoType{
     Info: types.DomainInfo{
         Name: types.DomainInfoName{
-            Name: "example.se",
+            Name:  "example.se",
+            Hosts: types.DomainHostsAll,
         },
     },
 }
@@ -77,8 +78,7 @@ The above code will generate the following XML.
   <command>
     <info>
       <domain:info xmlns:domain="urn:ietf:params:xml:ns:domain-1.0" xmlns="urn:ietf:params:xml:ns:domain-1.0">
-        <domain:name hosts="">example.se</domain:name>
-        <domain:authInfo />
+        <domain:name hosts="all">example.se</domain:name>
       </domain:info>
     </info>
   </command>
@@ -89,13 +89,13 @@ To unmarshal already created XML no matter the namespace or alias, use the auto
 genrated types. The XML listed above could be unmarshaled like this.
 
 ```go
-domainInfoRequest := DomainInfoTypeIn{}
+request := DomainInfoTypeIn{}
 
-if err := xml.Unmarshal(inData, &domainInfoRequest); err != nil {
+if err := xml.Unmarshal(inData, &request); err != nil {
     panic(err)
 }
 
-fmt.Println(domainInfoRequest.Info.Name.Name) // Prints `example.se`
+fmt.Println(request.Info.Name.Name) // Prints `example.se`
 ```
 
 ## Client

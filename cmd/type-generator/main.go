@@ -161,6 +161,10 @@ func Process(filename string) {
 }
 
 func createFile(data typeData) {
+	if len(data.Types) < 1 {
+		return
+	}
+
 	for i, d := range data.Types {
 		tagParts := strings.Split(d.FieldTag, "\"")
 		middleParts := strings.Split(tagParts[1], " ")

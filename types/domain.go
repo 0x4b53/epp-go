@@ -128,7 +128,7 @@ type DomainCreate struct {
 	NameServer NameServer `xml:"ns,omitempty"`
 	Registrant string     `xml:"registrant,omitempty"`
 	Contacts   []Contact  `xml:"contact,omitempty"`
-	AuthInfo   AuthInfo   `xml:"authInfo,omitempty"`
+	AuthInfo   *AuthInfo  `xml:"authInfo,omitempty"`
 }
 
 // DomainDelete represents a domain delete command.
@@ -139,13 +139,13 @@ type DomainDelete struct {
 // DomainInfo represents a domain info command.
 type DomainInfo struct {
 	Name     DomainInfoName `xml:"name"`
-	AuthInfo AuthInfo       `xml:"authInfo,omitempty"`
+	AuthInfo *AuthInfo      `xml:"authInfo,omitempty"`
 }
 
 // DomainInfoName represents a domain name in a domain info response.
 type DomainInfoName struct {
 	Name  string          `xml:",chardata"`
-	Hosts DomainHostsType `xml:"hosts,attr"`
+	Hosts DomainHostsType `xml:"hosts,attr,omitempty"`
 }
 
 // DomainRenew represents a domain renew command.
@@ -157,9 +157,9 @@ type DomainRenew struct {
 
 // DomainTransfer represents a domain transfer command.
 type DomainTransfer struct {
-	Name     string   `xml:"command>transfer>transfer>name"`
-	Period   Period   `xml:"command>transfer>transfer>period,omitempty"`
-	Authinfo AuthInfo `xml:"command>transfer>transfer>authInfo,omitempty"`
+	Name     string    `xml:"command>transfer>transfer>name"`
+	Period   Period    `xml:"command>transfer>transfer>period,omitempty"`
+	Authinfo *AuthInfo `xml:"command>transfer>transfer>authInfo,omitempty"`
 }
 
 // DomainUpdate represents a domain update command.
@@ -179,8 +179,8 @@ type DomainAddRemove struct {
 
 // DomainChange ...
 type DomainChange struct {
-	Registrant string   `xml:"registrant,omitempty"`
-	AuthInfo   AuthInfo `xml:"authInfo,omitempty"`
+	Registrant string    `xml:"registrant,omitempty"`
+	AuthInfo   *AuthInfo `xml:"authInfo,omitempty"`
 }
 
 // Period represents the period unit and value.

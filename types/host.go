@@ -28,33 +28,98 @@ const (
 	HostStatusServerUpdateProhibited HostStatusType = "serverUpdateProhibited"
 )
 
+// HostCheckType represents a host check command.
+type HostCheckType struct {
+	Check HostCheck `xml:"urn:ietf:params:xml:ns:host-1.0 command>check>check"`
+}
+
+// HostCreateType represents a host create command.
+type HostCreateType struct {
+	Create HostCreate `xml:"urn:ietf:params:xml:ns:host-1.0 command>create>create"`
+}
+
+// HostDeleteType represents a host delete command.
+type HostDeleteType struct {
+	Delete HostDelete `xml:"urn:ietf:params:xml:ns:host-1.0 command>delete>delete"`
+}
+
+// HostInfoType represents a host info command.
+type HostInfoType struct {
+	Info HostInfo `xml:"urn:ietf:params:xml:ns:host-1.0 command>info>info"`
+}
+
+// HostUpdateType represents a host update command.
+type HostUpdateType struct {
+	Update HostUpdate `xml:"urn:ietf:params:xml:ns:host-1.0 command>update>update"`
+}
+
+// HostCheckDataType represents host check data.
+type HostCheckDataType struct {
+	CheckData HostCheckData `xml:"urn:ietf:params:xml:ns:host-1.0 chkData"`
+}
+
+// HostCreateDataType represents host create data.
+type HostCreateDataType struct {
+	CreateData HostCreateData `xml:"urn:ietf:params:xml:ns:host-1.0 creData"`
+}
+
+// HostInfoDataType represents host info data.
+type HostInfoDataType struct {
+	InfoData HostInfoData `xml:"urn:ietf:params:xml:ns:host-1.0 infData"`
+}
+
 // HostCheck represents a host check request to the EPP server.
 type HostCheck struct {
-	Names []string `xml:"command>check>check>name"`
+	Names []string `xml:"name"`
 }
 
 // HostCreate represents a host create request to the EPP server.
 type HostCreate struct {
-	Name    string      `xml:"command>create>create>name"`
-	Address HostAddress `xml:"command>create>create>addr,omitempty"`
+	Name    string      `xml:"name"`
+	Address HostAddress `xml:"addr,omitempty"`
 }
 
 // HostDelete represents a host delete request to the EPP server.
 type HostDelete struct {
-	Name string `xml:"command>delete>delete>name"`
+	Name string `xml:"name"`
 }
 
 // HostInfo represents a host info request to the EPP server.
 type HostInfo struct {
-	Name string `xml:"command>info>hot:info>name"`
+	Name string `xml:"name"`
 }
 
 // HostUpdate represents a host update request to the EPP server.
 type HostUpdate struct {
-	Name   string         `xml:"command>update>update>name"`
-	Add    *HostAddRemove `xml:"command>update>update>add,omitempty"`
-	Remove *HostAddRemove `xml:"command>update>update>rem,omitempty"`
-	Change string         `xml:"command>update>update>chg>name,omitempty"`
+	Name   string         `xml:"name"`
+	Add    *HostAddRemove `xml:"add,omitempty"`
+	Remove *HostAddRemove `xml:"rem,omitempty"`
+	Change string         `xml:"chg>name,omitempty"`
+}
+
+// HostCheckData represents the response for a host check command.
+type HostCheckData struct {
+	Name []CheckType `xml:"cd"`
+}
+
+// HostCreateData represents the response for a host create command.
+type HostCreateData struct {
+	Name       string    `xml:"name"`
+	CreateDate time.Time `xml:"crDate"`
+}
+
+// HostInfoData represents the response for a host info command.
+type HostInfoData struct {
+	Name         string        `xml:"name"`
+	ROID         string        `xml:"roid"`
+	Status       []HostStatus  `xml:"status"`
+	Address      []HostAddress `xml:"addr,omitempty"`
+	ClientID     string        `xml:"clID"`
+	CreateID     string        `xml:"crID"`
+	CreateDate   time.Time     `xml:"crDate"`
+	UpdateID     string        `xml:"upID,omitempty"`
+	UpdateDate   time.Time     `xml:"upDate,omitempty"`
+	TransferDate time.Time     `xml:"trDate,omitempty"`
 }
 
 // HostAddRemove represents data that can be added or removed while updating a
@@ -67,31 +132,6 @@ type HostAddRemove struct {
 type HostAddress struct {
 	Address string `xml:",chardata,omitempty"`
 	IP      IPType `xml:"ip,attr"`
-}
-
-// HostCheckData represents the response for a host check command.
-type HostCheckData struct {
-	Name []CheckType `xml:"chkData>cd"`
-}
-
-// HostCreateData represents the response for a host create command.
-type HostCreateData struct {
-	Name       string    `xml:"creData>name"`
-	CreateDate time.Time `xml:"creData>crDate"`
-}
-
-// HostInfoData represents the response for a host info command.
-type HostInfoData struct {
-	Name         string        `xml:"infData>name"`
-	ROID         string        `xml:"infData>roid"`
-	Status       []HostStatus  `xml:"infData>status"`
-	Address      []HostAddress `xml:"infData>addr,omitempty"`
-	ClientID     string        `xml:"infData>clID"`
-	CreateID     string        `xml:"infData>crID"`
-	CreateDate   time.Time     `xml:"infData>crDate"`
-	UpdateID     string        `xml:"infData>upID,omitempty"`
-	UpdateDate   time.Time     `xml:"infData>upDate,omitempty"`
-	TransferDate time.Time     `xml:"infData>trDate,omitempty"`
 }
 
 // HostStatus represents statuses for a host.
