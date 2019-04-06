@@ -9,13 +9,19 @@ import (
 	xsd "github.com/lestrrat-go/libxml2/xsd"
 )
 
-// Validator represents a validator holding the XSD schema to calidate against.
-type Validator struct {
+// Validator represents the interface to validate XML.
+type Validator interface {
+	Validate(xml []byte) error
+	Free()
+}
+
+// XMLValidator represents a validator holding the XSD schema to calidate against.
+type XMLValidator struct {
 	Schema *xsd.Schema
 }
 
 // NewValidator creates a new validator.
-func NewValidator(rootXSD string) (*Validator, error) {
+func NewValidator(rootXSD string) (*XMLValidator, error) {
 	cwd, err := os.Getwd()
 	if err != nil {
 		return nil, err
@@ -49,13 +55,13 @@ func NewValidator(rootXSD string) (*Validator, error) {
 		return nil, err
 	}
 
-	return &Validator{
+	return &XMLValidator{
 		Schema: schema,
 	}, nil
 }
 
 // Validate will validate XML towards the XSD schema.
-func (v *Validator) Validate(xml []byte) error {
+func (v *XMLValidator) Validate(xml []byte) error {
 	d, err := libxml2.Parse(xml)
 	if err != nil {
 		return err
@@ -66,4 +72,9 @@ func (v *Validator) Validate(xml []byte) error {
 	}
 
 	return nil
+}
+
+// Free frees the XSD C struct.
+func (v *XMLValidator) Free() {
+	v.Schema.Free()
 }

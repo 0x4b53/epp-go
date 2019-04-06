@@ -8,16 +8,22 @@ import (
 	"github.com/bombsimon/epp-go/types"
 )
 
+// Client represents an EPP client.
 type Client struct {
+	// TLSConfig holds the TLS configuration that will be used when connecting
+	// to an EPP server.
 	TLSConfig *tls.Config
-	messages  chan []byte
-	conn      net.Conn
+
+	// conn holds the TCP connection to the server.
+	conn net.Conn
 }
 
+// Connect will connect to the server passed as argument.
 func (c *Client) Connect(server string) ([]byte, error) {
 	if c.TLSConfig == nil {
 		c.TLSConfig = &tls.Config{}
 	}
+
 	conn, err := tls.Dial("tcp", server, c.TLSConfig)
 	if err != nil {
 		return nil, err
@@ -34,10 +40,12 @@ func (c *Client) Connect(server string) ([]byte, error) {
 	return greeting, nil
 }
 
+// Send will send data to the server.
 func (c *Client) Send(data []byte) ([]byte, error) {
 	err := WriteMessage(c.conn, data)
 	if err != nil {
 		_ = c.conn.Close()
+
 		return nil, err
 	}
 
@@ -45,6 +53,7 @@ func (c *Client) Send(data []byte) ([]byte, error) {
 	msg, err := ReadMessage(c.conn)
 	if err != nil {
 		_ = c.conn.Close()
+
 		return nil, err
 	}
 

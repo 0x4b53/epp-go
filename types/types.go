@@ -32,6 +32,12 @@ func AliasToNameSpace(alias string) string {
 	return ""
 }
 
+// Empty returns a non-nil value to use as an empty tag where the tag is defined
+// with `omitempty` and would otherwise not be visible.
+func Empty() *EmptyTag {
+	return &EmptyTag{}
+}
+
 // EmptyTag represents a tag that can not have any value. This is used for
 // instances to know where a tag was set or not by assigning the parent tag to a
 // pointer to this type.

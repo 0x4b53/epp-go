@@ -7,26 +7,66 @@ import (
 	"net"
 	"sync"
 	"time"
-
-	uuid "github.com/satori/go.uuid"
 )
 
 // Server represents the server handling requests.
 type Server struct {
-	IdleTimeout      time.Duration
-	MaxSessionLength time.Duration
-	TLSConfig        *tls.Config
-	Handler          HandlerFunc
-	Greeting         GreetFunc
-	Addr             string
+	// Addr is the address to use when listening to incomming TCP connections.
+	// This should be set to ':700' to access incomming traffic on any interface
+	// for the default EPP port 700.
+	Addr string
+
+	// Greeting is the function to exdecute while perofrming the greeting. This
+	// function should return the exact XML data that should be written to the
+	// socket. If an error is return, no greeting will be presented ant the
+	// socket will be closed.
+	Greeting GreetFunc
+
+	// Handler is the function that will receive the current session and the
+	// data printed to the socket for each request to the server. Use an epp mux
+	// from this library to route messages based on it's content.
+	Handler HandlerFunc
+
+	// IdleTimeout is the maximum timeout to idle on the server before being
+	// disconnected. Each time traffic is sent to the server the idle ticker is
+	// reset and a new duration of IdleTimeout is allowed.
+	IdleTimeout time.Duration
+
+	// SessionTimeout is the max duration allowed for a single session. If a
+	// client has been connected when this limit is reach it will be
+	// disconnedted after the current command being processed has finished.
+	SessionTimeout time.Duration
+
+	// TLSConfig is the server TLS config with configuration such as
+	// certificates, client auth etcetera.
+	TLSConfig *tls.Config
+
+	// Validator is a type that implements the validator interface. The
+	// validator interface should be able to validate XML against an XSD schema
+	// (or any other way). If the validator is a non nil value all incomming
+	// *and* outgoing data will be passed through the validator. Type
+	// implementing this interface using libxml2 bindings is available in the
+	// library.
+	Validator Validator
 
 	// Sessions will contain all the currently active sessions.
-	Sessions   map[string]*Session
+	Sessions map[string]*Session
+
+	// sessionMu is a mutex to use while reading and writing to the Sessions
+	// liste to ensure thread safe access.
 	sessionsMu sync.Mutex
+
+	// sessionWg is a wait group used to ensure all ongoing sessions are
+	// finished before closing the server.
 	sessionsWg sync.WaitGroup
 
+	// onStarted holds a list of functions that will be executed after the
+	// server has been started.
 	onStarteds []func()
-	stopChan   chan struct{}
+
+	// stopChan is the channel that will be closed to tell when the server
+	// should do a graceful shutdown.
+	stopChan chan struct{}
 }
 
 // ListenAndServe will start the epp server.
@@ -116,9 +156,11 @@ func (s *Server) Serve(l *net.TCPListener) error {
 func (s *Server) startSession(conn net.Conn, tlsConfig *tls.Config) {
 	// Initialize tls.
 	tlsConn := tls.Server(conn, tlsConfig)
+
 	err := tlsConn.Handshake()
 	if err != nil {
 		log.Println(err.Error())
+
 		return
 	}
 
@@ -126,8 +168,9 @@ func (s *Server) startSession(conn net.Conn, tlsConfig *tls.Config) {
 		tlsConn,
 		s.Handler,
 		s.Greeting,
-		tlsConn.ConnectionState,
-		uuid.Must(uuid.NewV4()).String(),
+		s.IdleTimeout,
+		s.SessionTimeout,
+		s.Validator,
 	)
 
 	// Ensure the session is added to our index.
@@ -143,6 +186,7 @@ func (s *Server) startSession(conn net.Conn, tlsConfig *tls.Config) {
 		if _, ok := s.Sessions[session.SessionID]; ok {
 			delete(s.Sessions, session.SessionID)
 		}
+
 		s.sessionsMu.Unlock()
 
 		s.sessionsWg.Done()
@@ -150,6 +194,7 @@ func (s *Server) startSession(conn net.Conn, tlsConfig *tls.Config) {
 	}()
 
 	log.Println("starting session", session.SessionID)
+
 	err = session.run()
 	if err != nil {
 		log.Println(err)

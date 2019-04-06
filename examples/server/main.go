@@ -15,7 +15,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/pkg/errors"
 
 	epp "github.com/bombsimon/epp-go"
@@ -25,16 +24,22 @@ import (
 func main() {
 	mux := epp.NewMux()
 
+	validator, err := epp.NewValidator("./xml/index.xsd")
+	if err != nil {
+		panic(err)
+	}
+
 	server := epp.Server{
-		IdleTimeout:      5 * time.Minute,
-		MaxSessionLength: 10 * time.Minute,
-		Addr:             ":4701",
-		Handler:          mux.Handle,
+		IdleTimeout:    5 * time.Minute,
+		SessionTimeout: 10 * time.Minute,
+		Addr:           ":4701",
+		Handler:        mux.Handle,
 		TLSConfig: &tls.Config{
 			Certificates: []tls.Certificate{generateCertificate()},
 			ClientAuth:   tls.RequireAnyClientCert,
 		},
-		Greeting: greeting,
+		Greeting:  greeting,
+		Validator: validator,
 	}
 
 	mux.AddHandler("command/login", login)
@@ -86,16 +91,14 @@ func greeting(s *epp.Session) ([]byte, error) {
 				},
 				Statement: types.DCPStatement{
 					Purpose: types.DCPPurpose{
-						Prov: &types.EmptyTag{},
+						Prov: types.Empty(),
 					},
 					Recipient: types.DCPRecipient{
-						Ours: []types.DCPOurs{
-							{},
-						},
-						Public: &types.EmptyTag{},
+						Ours:   []types.DCPOurs{{}},
+						Public: types.Empty(),
 					},
 					Retention: types.DCPRetention{
-						Stated: &types.EmptyTag{},
+						Stated: types.Empty(),
 					},
 				},
 			},
@@ -106,26 +109,6 @@ func greeting(s *epp.Session) ([]byte, error) {
 }
 
 func login(s *epp.Session, data []byte) ([]byte, error) {
-	domainInfo := types.DomainInfoType{
-		Info: types.DomainInfo{
-			Name: types.DomainInfoName{
-				Name:  "example.se",
-				Hosts: types.DomainHostsAll,
-			},
-		},
-	}
-
-	bytes, err := epp.Encode(
-		domainInfo,
-		epp.ClientXMLAttributes(),
-	)
-
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(string(bytes))
-
 	login := types.Login{}
 
 	if err := xml.Unmarshal(data, &login); err != nil {
@@ -197,7 +180,7 @@ func infoDomainWithExtension(s *epp.Session, data []byte) ([]byte, error) {
 					KeyTag:     10,
 					Algorithm:  3,
 					DigestType: 5,
-					Digest:     "FFAB0102FFAB0102FFAB0102FFAB0102FFAB0102FFAB0102FFAB0102FFAB0102",
+					Digest:     "FFAB0102FFAB0102FFAB0102",
 				},
 			},
 		},
@@ -232,16 +215,13 @@ func infoDomainWithExtension(s *epp.Session, data []byte) ([]byte, error) {
 }
 
 func createDomain(s *epp.Session, data []byte) ([]byte, error) {
-	dc := struct {
-		Data types.DomainCreate `xml:"command>create>create"`
-	}{}
+	dc := types.DomainCreateTypeIn{}
 
 	if err := xml.Unmarshal(data, &dc); err != nil {
 		return nil, err
 	}
 
 	// Do stuff with dc which holds all (validated) domain create data.
-	spew.Dump(dc)
 
 	return epp.Encode(
 		epp.CreateErrorResponse(epp.EppUnimplementedCommand, "not yet implemented"),

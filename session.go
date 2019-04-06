@@ -7,6 +7,7 @@ import (
 	"time"
 
 	xsd "github.com/lestrrat-go/libxml2/xsd"
+	uuid "github.com/satori/go.uuid"
 )
 
 // HandlerFunc represents a function for an EPP message.
@@ -17,37 +18,59 @@ type GreetFunc func(*Session) ([]byte, error)
 
 // Session is an active connection to the EPP server.
 type Session struct {
-	stopChan  chan struct{}
-	conn      net.Conn
-	handler   HandlerFunc
-	greeting  GreetFunc
-	validator *Validator
-
-	Data            map[string]interface{}
-	SessionID       string
-	SessionTimeout  time.Duration
-	IdleTimeout     time.Duration
+	// ConnectionState holds the state of the TLS connection initiated while
+	// doing the handshake with the server.
 	ConnectionState func() tls.ConnectionState
+
+	// IdleTimeout is the maximum timeout to idle on the server before being
+	// disconnected. Each time traffic is sent to the server the idle ticker is
+	// reset and a new duration of IdleTimeout is allowed.
+	IdleTimeout time.Duration
+
+	// SessionID is a unique ID to use to identify a specific session.
+	SessionID string
+
+	// SessionTimeout is the max duration allowed for a single session. If a
+	// client has been connected when this limit is reach it will be
+	// disconnedted after the current command being processed has finished.
+	SessionTimeout time.Duration
+
+	// conn holds the TCP connection with a client.
+	conn net.Conn
+
+	// greeting holds the function that will generate the XML printed while
+	// greeting clients connection to the server.
+	greeting GreetFunc
+
+	// handler holds a function that will receive each request to the server.
+	handler HandlerFunc
+
+	// stopChan is used to tell the session to terminate.
+	stopChan chan struct{}
+
+	// validator is a type that implements the validator interface. The
+	// validator interface should be able to validate XML against an XSD schema
+	// (or any other way). If the validator is a non nil value all incomming
+	// *and* outgoing data will be passed through the validator. Type
+	// implementing this interface using libxml2 bindings is available in the
+	// library.
+	validator Validator
 }
 
 // NewSession will create a new Session.
-func NewSession(conn net.Conn, handler HandlerFunc, greeting GreetFunc, tlsStateFunc func() tls.ConnectionState, sessionID string) *Session {
-	validator, err := NewValidator("xml/index.xsd")
-	if err != nil {
-		panic(err)
-	}
+func NewSession(conn *tls.Conn, handler HandlerFunc, greeting GreetFunc, idleTimeout, sessionTimeout time.Duration, validator Validator) *Session {
+	sessionID := uuid.Must(uuid.NewV4()).String()
 
 	s := &Session{
-		stopChan:        make(chan struct{}),
-		conn:            conn,
-		handler:         handler,
-		greeting:        greeting,
-		validator:       validator,
-		Data:            map[string]interface{}{},
 		SessionID:       sessionID,
-		SessionTimeout:  1 * time.Hour,
-		IdleTimeout:     10 * time.Minute,
-		ConnectionState: tlsStateFunc,
+		SessionTimeout:  sessionTimeout,
+		IdleTimeout:     idleTimeout,
+		ConnectionState: conn.ConnectionState,
+		conn:            conn,
+		greeting:        greeting,
+		handler:         handler,
+		stopChan:        make(chan struct{}),
+		validator:       validator,
 	}
 
 	return s
@@ -138,7 +161,7 @@ func (s *Session) Close() error {
 	close(s.stopChan)
 
 	if s.validator != nil {
-		s.validator.Schema.Free()
+		s.validator.Free()
 	}
 
 	return nil
