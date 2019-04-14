@@ -18,25 +18,32 @@ import (
 func TestServer(t *testing.T) {
 	cert := generateCertificate()
 
+	didStart := make(chan struct{})
+
 	srv := Server{
+		Addr: ":9889",
 		TLSConfig: &tls.Config{
 			Certificates: []tls.Certificate{cert},
 		},
-		Handler: func(s *Session, in []byte) ([]byte, error) {
-			data := fmt.Sprintf("response: %s", string(in))
-			return []byte(data), nil
+		SessionConfig: SessionConfig{
+			IdleTimeout:    10 * time.Minute,
+			SessionTimeout: 10 * time.Minute,
+			Handler: func(s *Session, in []byte) ([]byte, error) {
+				data := fmt.Sprintf("%s", string(in))
+				return []byte(data), nil
+			},
+			Greeting: func(s *Session) ([]byte, error) {
+				return []byte("hello"), nil
+			},
 		},
-		Greeting: func(s *Session) ([]byte, error) {
-			return []byte("hello"), nil
+		OnStarteds: []func(){
+			func() {
+				didStart <- struct{}{}
+			},
 		},
-		Addr: ":9889",
 	}
-	defer srv.Stop()
 
-	didStart := make(chan struct{})
-	srv.OnStarted(func() {
-		didStart <- struct{}{}
-	})
+	defer srv.Stop()
 
 	go func() {
 		err := srv.ListenAndServe()
@@ -46,11 +53,13 @@ func TestServer(t *testing.T) {
 	}()
 
 	<-didStart
+
 	client := &Client{
 		TLSConfig: &tls.Config{
 			InsecureSkipVerify: true,
 		},
 	}
+
 	greeting, err := client.Connect(":9889")
 	require.Nil(t, err)
 
@@ -61,9 +70,10 @@ func TestServer(t *testing.T) {
 		<epp xmlns="urn:ietf:params:xml:ns:epp-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:ietf:params:xml:ns:epp-1.0 epp-1.0.xsd">
 		  <hello>message %d</hello>
 		</epp>`, i)
+
 		response, err := client.Send([]byte(data))
 		assert.Nil(t, err)
-		assert.Equal(t, fmt.Sprintf("response: %s", data), string(response))
+		assert.Equal(t, fmt.Sprintf("%s", data), string(response))
 	}
 }
 

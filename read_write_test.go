@@ -36,31 +36,33 @@ func TestReadWriteMessage(t *testing.T) {
 }
 
 func TestEncode(t *testing.T) {
-	dc := types.DomainCreate{
-		Name: "example.net",
-		Period: types.Period{
-			Value: 12,
-			Unit:  "m",
-		},
-		NameServer: types.NameServer{
-			HostObject: []string{
-				"ns1.example.net",
-				"ns2.example.net",
+	dc := types.DomainCreateType{
+		Create: types.DomainCreate{
+			Name: "example.net",
+			Period: types.Period{
+				Value: 12,
+				Unit:  "m",
 			},
-		},
-		Registrant: "registrant-00001",
-		Contacts: []types.Contact{
-			{
-				Name: "contact-00001",
-				Type: "tech",
+			NameServer: types.NameServer{
+				HostObject: []string{
+					"ns1.example.net",
+					"ns2.example.net",
+				},
 			},
-			{
-				Name: "contact-00002",
-				Type: "admin",
+			Registrant: "registrant-00001",
+			Contacts: []types.Contact{
+				{
+					Name: "contact-00001",
+					Type: "tech",
+				},
+				{
+					Name: "contact-00002",
+					Type: "admin",
+				},
 			},
-		},
-		AuthInfo: types.AuthInfo{
-			Password: "some-password",
+			AuthInfo: &types.AuthInfo{
+				Password: "some-password",
+			},
 		},
 	}
 
@@ -68,34 +70,18 @@ func TestEncode(t *testing.T) {
 <epp xmlns="urn:ietf:params:xml:ns:epp-1.0">
   <command>
     <create>
-      <domain:create xmlns:domain="urn:ietf:params:xml:ns:domain-1.0">
-        <domain:name>
-          example.net
-        </domain:name>
-        <domain:period unit="m">
-          12
-        </domain:period>
+      <domain:create xmlns:domain="urn:ietf:params:xml:ns:domain-1.0" xmlns="urn:ietf:params:xml:ns:domain-1.0">
+        <domain:name>example.net</domain:name>
+        <domain:period unit="m">12</domain:period>
         <domain:ns>
-          <domain:hostObj>
-            ns1.example.net
-          </domain:hostObj>
-          <domain:hostObj>
-            ns2.example.net
-          </domain:hostObj>
+          <domain:hostObj>ns1.example.net</domain:hostObj>
+          <domain:hostObj>ns2.example.net</domain:hostObj>
         </domain:ns>
-        <domain:registrant>
-          registrant-00001
-        </domain:registrant>
-        <domain:contact type="tech">
-          contact-00001
-        </domain:contact>
-        <domain:contact type="admin">
-          contact-00002
-        </domain:contact>
+        <domain:registrant>registrant-00001</domain:registrant>
+        <domain:contact type="tech">contact-00001</domain:contact>
+        <domain:contact type="admin">contact-00002</domain:contact>
         <domain:authInfo>
-          <domain:pw>
-            some-password
-          </domain:pw>
+          <domain:pw>some-password</domain:pw>
         </domain:authInfo>
       </domain:create>
     </create>
@@ -106,7 +92,7 @@ func TestEncode(t *testing.T) {
 	encoded, err := Encode(dc, ClientXMLAttributes())
 
 	require.Nil(t, err)
-	assert.Equal(t, expectedXMLWithNS, encoded)
+	assert.Equal(t, string(expectedXMLWithNS), string(encoded))
 }
 
 func TestDecode(t *testing.T) {
@@ -133,10 +119,13 @@ func TestDecode(t *testing.T) {
   </command>
 </epp>`)
 
-	dc := types.DomainCreate{}
-	if err := xml.Unmarshal(x, &dc); err != nil {
+	dci := types.DomainCreateTypeIn{}
+
+	if err := xml.Unmarshal(x, &dci); err != nil {
 		assert.Fail(t, "could not unmarshal")
 	}
+
+	dc := dci.Create
 
 	assert.Equal(t, "example.net", dc.Name, "domain name found")
 	assert.Equal(t, 12, dc.Period.Value, "period found")
@@ -231,7 +220,6 @@ func ExampleAddNamespace() {
 	//         <domain:clID>Some Client</domain:clID>
 	//         <domain:crID>Some Client</domain:crID>
 	//         <domain:upID>Some Client</domain:upID>
-	//         <domain:authInfo />
 	//       </domain:infData>
 	//     </resData>
 	//     <extension>
@@ -248,9 +236,9 @@ func ExampleAddNamespace() {
 	//       </sec:infData>
 	//     </extension>
 	//     <trID>
-	//       <clTRID />
 	//       <svTRID />
 	//     </trID>
 	//   </response>
 	// </epp>
+
 }

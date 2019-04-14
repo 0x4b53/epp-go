@@ -30,16 +30,23 @@ func main() {
 	}
 
 	server := epp.Server{
-		IdleTimeout:    5 * time.Minute,
-		SessionTimeout: 10 * time.Minute,
-		Addr:           ":4701",
-		Handler:        mux.Handle,
+		Addr: ":4701",
 		TLSConfig: &tls.Config{
 			Certificates: []tls.Certificate{generateCertificate()},
 			ClientAuth:   tls.RequireAnyClientCert,
 		},
-		Greeting:  greeting,
-		Validator: validator,
+		SessionConfig: epp.SessionConfig{
+			IdleTimeout:    5 * time.Minute,
+			SessionTimeout: 10 * time.Minute,
+			Greeting:       greeting,
+			Handler:        mux.Handle,
+			OnCommands: []func(sess *epp.Session){
+				func(sess *epp.Session) {
+					log.Printf("this command was brought to you by %s", sess.SessionID)
+				},
+			},
+			Validator: validator,
+		},
 	}
 
 	mux.AddHandler("command/login", login)

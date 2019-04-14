@@ -16,38 +16,16 @@ type Server struct {
 	// for the default EPP port 700.
 	Addr string
 
-	// Greeting is the function to exdecute while perofrming the greeting. This
-	// function should return the exact XML data that should be written to the
-	// socket. If an error is return, no greeting will be presented ant the
-	// socket will be closed.
-	Greeting GreetFunc
+	// OnStarteds holds a list of functions that will be executed after the
+	// server has been started.
+	OnStarteds []func()
 
-	// Handler is the function that will receive the current session and the
-	// data printed to the socket for each request to the server. Use an epp mux
-	// from this library to route messages based on it's content.
-	Handler HandlerFunc
-
-	// IdleTimeout is the maximum timeout to idle on the server before being
-	// disconnected. Each time traffic is sent to the server the idle ticker is
-	// reset and a new duration of IdleTimeout is allowed.
-	IdleTimeout time.Duration
-
-	// SessionTimeout is the max duration allowed for a single session. If a
-	// client has been connected when this limit is reach it will be
-	// disconnedted after the current command being processed has finished.
-	SessionTimeout time.Duration
+	// SessionConfig holds the configuration to use for eachsession created.
+	SessionConfig SessionConfig
 
 	// TLSConfig is the server TLS config with configuration such as
 	// certificates, client auth etcetera.
 	TLSConfig *tls.Config
-
-	// Validator is a type that implements the validator interface. The
-	// validator interface should be able to validate XML against an XSD schema
-	// (or any other way). If the validator is a non nil value all incomming
-	// *and* outgoing data will be passed through the validator. Type
-	// implementing this interface using libxml2 bindings is available in the
-	// library.
-	Validator Validator
 
 	// Sessions will contain all the currently active sessions.
 	Sessions map[string]*Session
@@ -59,10 +37,6 @@ type Server struct {
 	// sessionWg is a wait group used to ensure all ongoing sessions are
 	// finished before closing the server.
 	sessionsWg sync.WaitGroup
-
-	// onStarted holds a list of functions that will be executed after the
-	// server has been started.
-	onStarteds []func()
 
 	// stopChan is the channel that will be closed to tell when the server
 	// should do a graceful shutdown.
@@ -91,8 +65,6 @@ func (s *Server) ListenAndServe() error {
 
 // Serve will serve connections by listening on l.
 func (s *Server) Serve(l *net.TCPListener) error {
-	tlsConfig := &tls.Config{}
-
 	s.sessionsWg = sync.WaitGroup{}
 	s.stopChan = make(chan struct{})
 	s.Sessions = map[string]*Session{}
@@ -101,24 +73,27 @@ func (s *Server) Serve(l *net.TCPListener) error {
 		if closeErr := l.Close(); closeErr != nil {
 			fmt.Println(closeErr.Error())
 		}
+
 		s.sessionsWg.Wait()
 	}()
 
+	tlsConfig := &tls.Config{}
+
+	// Use the same TLS config for the session if used on the server.
 	if s.TLSConfig != nil {
 		tlsConfig = s.TLSConfig.Clone()
 	}
 
-	for _, f := range s.onStarteds {
+	// Perform user defined functions to execute each time the server is
+	// started.
+	for _, f := range s.OnStarteds {
 		f()
 	}
-
-	var err error
 
 	for {
 		// Reset deadline for the listener to stop blocking on accepting
 		// connections and allow shutdown.
-		err = l.SetDeadline(time.Now().Add(1 * time.Second))
-		if err != nil {
+		if err := l.SetDeadline(time.Now().Add(1 * time.Second)); err != nil {
 			return err
 		}
 
@@ -164,14 +139,7 @@ func (s *Server) startSession(conn net.Conn, tlsConfig *tls.Config) {
 		return
 	}
 
-	session := NewSession(
-		tlsConn,
-		s.Handler,
-		s.Greeting,
-		s.IdleTimeout,
-		s.SessionTimeout,
-		s.Validator,
-	)
+	session := NewSession(tlsConn, s.SessionConfig)
 
 	// Ensure the session is added to our index.
 	s.sessionsWg.Add(1)
@@ -183,28 +151,22 @@ func (s *Server) startSession(conn net.Conn, tlsConfig *tls.Config) {
 	// exits.
 	defer func() {
 		s.sessionsMu.Lock()
+
 		if _, ok := s.Sessions[session.SessionID]; ok {
 			delete(s.Sessions, session.SessionID)
 		}
 
 		s.sessionsMu.Unlock()
-
 		s.sessionsWg.Done()
+
 		log.Println("session completed")
 	}()
 
 	log.Println("starting session", session.SessionID)
 
-	err = session.run()
-	if err != nil {
+	if err = session.run(); err != nil {
 		log.Println(err)
 	}
-}
-
-// OnStarted will register a function that is called when the server has
-// finished it's startup.
-func (s *Server) OnStarted(f func()) {
-	s.onStarteds = append(s.onStarteds, f)
 }
 
 // Stop will close the channel making no new regquests being processed and then
@@ -214,11 +176,11 @@ func (s *Server) Stop() {
 	defer s.sessionsMu.Unlock()
 
 	log.Print("stopping listener channel")
+
 	close(s.stopChan)
 
 	for _, session := range s.Sessions {
-		err := session.Close()
-		if err != nil {
+		if err := session.Close(); err != nil {
 			log.Println("error closing session:", err.Error())
 		}
 	}
