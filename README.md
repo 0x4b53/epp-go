@@ -1,5 +1,6 @@
 # EPP Go - Extensible Provisioning Protocol Server and Client
 
+
 This is an implementation of how to handle EPP requests concurrently, both as a
 client and as a server. The main focus lays implementing types that may be used
 both as a client and as a server. These types should be easy to use and support
@@ -13,6 +14,9 @@ probably only be minor helpers and wrappers.
 **This is a work in progress and a long way from completed. This repository is
 created to allow collaborations and inspire other people. This probject is a
 private project and an experiment to work with XSD files and XML with Go.**
+
+**For a more up to date epp library in Go, visit
+https://github.com/dotse/epp-lib**
 
 ## Types
 
